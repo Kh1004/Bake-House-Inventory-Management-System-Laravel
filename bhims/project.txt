@@ -1,0 +1,192 @@
+ 
+Abstract 
+ 
+The Bake House Inventory Management System is designed to streamline inventory processes for 
+bake houses, providing efficient management of ingredients, baked goods, and supplier information. 
+This system leverages Laravel, MySQL, Tailwind CSS, and JavaScript to create a web-based solution 
+that improves operational efficiency and minimizes waste. The system includes features like stock 
+tracking, supplier management, sales integration, and detailed reporting, ensuring seamless 
+inventory operations for bake houses. 
+
+List of Abbreviations 
+ 
+• UI: User Interface 
+• UX: User Experience 
+ 
+ 
+ 
+Project Charter 
+ 
+To develop a robust and user-friendly inventory management system for bake houses to optimize 
+ingredient tracking, stock usage, and supplier management, Future Demand-Related Market 
+Prediction, Enhancing Profit Levels.
+
+Project Charter 
+ 
+To develop a robust and user-friendly inventory management system for bake houses to optimize 
+ingredient tracking, stock usage, and supplier management, Future Demand-Related Market 
+Prediction, Enhancing Profit Levels. 
+ 
+Objective 
+ 
+1. User Management: - 
+This function allows for the creation and management of user accounts with role-based 
+access. Administrators have full control, while managers and staff have limited permissions. 
+Each user must authenticate to access the system, ensuring security. Users can update their 
+profile information, reset passwords, and manage user roles as required by the bake house. 
+ 
+  
+2. Ingredient Stock Management: - 
+Ingredient stock management tracks all inventory related to raw materials. The system 
+maintains records of each ingredient's current quantity, reorder levels, and alerts when stock 
+is low. This helps in optimizing stock usage, minimizing waste, and ensuring that critical 
+ingredients are always available for production without overstocking. 
+ 
+ 
+ 
+ 
+3. Recipe Management: - 
+The recipe management module allows users to define and store recipes for baked goods. 
+Each recipe includes the list of ingredients and their required quantities. When baked goods 
+are produced, the system deducts the corresponding ingredients from the stock, providing 
+an accurate real-time inventory update to prevent shortages. 
+ 
+4. Supplier Management: - 
+Supplier management keeps records of all suppliers, including contact information, pricing, 
+and past orders. This module helps track supplier performance and allows generating 
+purchase orders. It simplifies reordering by associating ingredients with preferred suppliers, 
+ensuring timely procurement to keep stock levels optimal. 
+ 
+5. Sales and Inventory Integration: - 
+This function integrates sales data with inventory tracking. Every sale automatically updates 
+the stock levels of baked goods and ingredients, providing real-time visibility into available 
+inventory. It helps prevent over-commitment of goods and improves demand forecasting, 
+linking sales to inventory usage for better decision-making. 
+ 
+6. Reporting and Analytics: - 
+Reporting provides insights into inventory trends, sales performance, and profitability. Users 
+can generate detailed reports on stock usage, low-stock alerts, and sales summaries. 
+Analytics features include graphs and dashboards to visualize data, helping managers 
+optimize inventory and make data-driven business decisions to boost profitability. 
+ 
+7. Notifications and Alerts: - 
+The system provides real-time notifications and alerts for various events, such as low-stock 
+warnings, upcoming expirations, or pending orders. These notifications keep users informed, 
+ensuring timely actions to maintain inventory efficiency. Alerts can be configured to send 
+reminders through the dashboard or via email. 
+ 
+8. Future Demand-Related Market Prediction: - 
+Using historical sales data and market trends, this function predicts future demand for baked 
+goods and ingredients. It uses statistical analysis to recommend optimal inventory levels. This 
+reduces the risk of stockouts or overstocking, helping to align production schedules with 
+anticipated customer demand. 
+ 
+9. Enhancing Profit Levels: - 
+This functionality identifies profit-boosting opportunities by analyzing cost-effective 
+suppliers, reducing waste, and optimizing stock replenishment cycles. It provides actionable 
+insights on high-performing products, cost drivers, and pricing strategies, enabling bake 
+house owners to make data-driven decisions that increase profitability and improve overall 
+business performance. 
+ 
+10.  Competitor-Warding Market Analysis 
+This feature allows bake houses to monitor and analyze competitors’ pricing strategies, 
+product availability, and market trends.  
+ 
+ 
+ 
+ 
+ 
+Requirements Specification 
+ 
+Functional Requirements: 
+1. Ingredient stock management with alerts for low stock. 
+2. Recipe management for baked goods production. 
+3. Supplier management and order tracking. 
+4. Integration with sales for real-time stock updates. 
+5. Reporting and analytics for inventory trends and profitability. 
+6. User roles with role-based access control.
+
+
+Non-Functional Requirements: 
+1. The system should be responsive and accessible across devices. 
+ 
+2. Data security and regular backups. 
+3. User-friendly interface for all users. 
+ 
+ 
+Analysis and Design 
+ 
+System Architecture: The system will follow the Model-View-Controller (MVC) pattern using Laravel. 
+Database Design: MySQL database with tables for ingredients, baked goods, suppliers, sales, and 
+users. 
+UI Design: Tailwind CSS for a modern and intuitive interface. 
+ 
+ 
+Implementation 
+ 
+Technologies: 
+ 
+ 
+• Database: MySQL 
+The choice of MySQL as the database management system is ideal for this project. MySQL is 
+a proven, open-source relational database that excels in handling structured data efficiently. 
+It is well-suited for managing user data, event details, and other structured information. This 
+choice ensures that the platform can store, retrieve, and manage data in a secure and 
+organized manner. 
+ 
+Usage in the project: 
+• Store information about ingredients, baked goods, suppliers, and sales. 
+• Support complex queries to generate inventory and sales reports. 
+ 
+ 
+• Backend: Laravel 
+Laravel is a PHP framework used for building robust web applications following the Model
+View-Controller (MVC) architecture. It simplifies common tasks like routing, authentication, 
+and session management. In this inventory management system, Laravel will handle server
+side operations, including processing form inputs, managing database queries, and 
+implementing business logic. 
+ 
+Usage in the project: 
+• Manage ingredient stock levels. 
+• Implement user authentication and authorization. 
+• Handle requests for adding, updating, and retrieving inventory data. 
+ 
+ 
+• Frontend: HTML, Tailwind CSS, JavaScript 
+ 
+1. HTML (HyperText Markup Language) is used to create the structure of web pages. It 
+defines elements such as buttons, forms, and tables that users interact with. 
+ 
+Usage in the project: 
+ 
+• Structure forms for adding ingredients, suppliers, and baked goods. 
+• Display inventory data and reports. 
+ 
+ 
+2. Tailwind CSS is a utility-first CSS framework that helps developers quickly style web 
+pages with predefined classes. 
+ 
+Usage in the project: 
+• Create a modern, responsive, and visually appealing user interface for 
+managing inventory. 
+• Style buttons, forms, and navigation elements efficiently. 
+ 
+ 
+ 
+ 
+ 
+3. JavaScript will play a critical role in enhancing interactivity within the platform. It will 
+be used to add dynamic features, enabling real-time updates, interactive elements, 
+and a smooth user experience. 
+ 
+Usage in the project: 
+• Validate form inputs for ingredient and product management. 
+• Implement interactive features like stock-level indicators and low-stock 
+alerts. 
+ 
+ 
+ 
+Deployment 
+ 
+Docker: Docker containers will be used to deploy the application in isolated and consistent 
+environments, making it easier to manage and scale
