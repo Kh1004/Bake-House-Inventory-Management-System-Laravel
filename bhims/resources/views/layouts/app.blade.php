@@ -31,67 +31,67 @@
         @include('layouts.top-navigation')
 
         <div class="flex h-full">
-            <!-- Mobile sidebar -->
-            <div x-show="sidebarOpen" 
-                 x-transition:enter="transition ease-in-out duration-300 transform"
-                 x-transition:enter-start="-translate-x-full"
+            <!-- Single responsive sidebar -->
+            <div x-data="{ isMobile: window.innerWidth < 1024 }"
+                 x-init="
+                    window.addEventListener('resize', () => isMobile = window.innerWidth < 1024);
+                    // Close sidebar by default on mobile
+                    if (window.innerWidth < 1024) {
+                        $dispatch('sidebar-close');
+                    }
+                 "
+                 x-show="sidebarOpen || !isMobile"
+                 x-transition:enter="transition-transform duration-300 ease-in-out"
+                 x-transition:enter-start="-translate-x-full lg:translate-x-0"
                  x-transition:enter-end="translate-x-0"
-                 x-transition:leave="transition ease-in-out duration-300 transform"
+                 x-transition:leave="transition-transform duration-200 ease-in-out"
                  x-transition:leave-start="translate-x-0"
-                 x-transition:leave-end="-translate-x-full"
-                 class="sidebar-content fixed inset-0 z-40 lg:z-30 lg:relative lg:transform-none"
-                 :class="{'hidden': !sidebarOpen && window.innerWidth >= 1024}"
-                 x-cloak
-                 @keydown.escape.window="if(window.innerWidth >= 1024) sidebarOpen = false">
-                <div class="fixed inset-0 bg-gray-600 bg-opacity-75" 
-                     @click="sidebarOpen = false" 
-                     aria-hidden="true">
-                </div>
-                <div class="relative flex flex-col w-64 h-full bg-white dark:bg-gray-800">
-                    <div class="absolute top-0 right-0 -mr-12 pt-2">
-                        <button @click="sidebarOpen = false" class="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white">
+                 x-transition:leave-end="-translate-x-full lg:translate-x-0"
+                 class="fixed inset-y-0 left-0 z-40 w-64 lg:relative lg:z-30 lg:translate-x-0"
+                 :class="{
+                    'lg:hidden': !sidebarOpen && !isMobile,
+                    'bg-white dark:bg-gray-800': true
+                 }"
+                 @keydown.escape.window="if(isMobile) sidebarOpen = false">
+                <div class="relative flex flex-col h-full">
+                    <!-- Close button (always visible when sidebar is open) -->
+                    <div x-show="sidebarOpen" class="absolute top-2 right-2 z-50">
+                        <button @click="sidebarOpen = false" class="flex items-center justify-center h-10 w-10 rounded-full bg-white dark:bg-gray-700 shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             <span class="sr-only">Close sidebar</span>
-                            <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="h-6 w-6 text-gray-800 dark:text-gray-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
                     </div>
-                    <div class="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
-                        <div class="flex-shrink-0 flex items-center px-4">
+                    
+                    <!-- Sidebar content -->
+                    <div class="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
+                        <div class="flex items-center flex-shrink-0 px-4">
                             <x-application-logo class="h-8 w-auto text-indigo-600 dark:text-indigo-400" />
                             <span class="ml-2 text-xl font-bold text-gray-900 dark:text-white">BHIMS</span>
                         </div>
-                        <nav class="mt-5 px-2 space-y-1">
+                        <nav class="mt-5 flex-1 px-2 space-y-1">
                             @include('layouts.navigation')
                         </nav>
                     </div>
                 </div>
             </div>
 
-            <!-- Desktop sidebar -->
-            <div x-show="window.innerWidth >= 1024" 
-                 x-transition:enter="transition ease-in-out duration-300 transform"
-                 x-transition:enter-start="-translate-x-full"
-                 x-transition:enter-end="translate-x-0"
-                 x-transition:leave="transition ease-in-out duration-300 transform"
-                 x-transition:leave-start="translate-x-0"
-                 x-transition:leave-end="-translate-x-full"
-                 class="sidebar-content hidden lg:block fixed inset-y-0 left-0 z-30 w-64 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
-                 :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen}">
-                <div class="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto h-full">
-                    <div class="flex items-center flex-shrink-0 px-4">
-                        <x-application-logo class="h-8 w-auto text-indigo-600 dark:text-indigo-400" />
-                        <span class="ml-2 text-xl font-bold text-gray-900 dark:text-white">BHIMS</span>
-                    </div>
-                    <nav class="mt-5 flex-1 px-2 space-y-1">
-                        @include('layouts.navigation')
-                    </nav>
-                </div>
-            </div>
-
             <!-- Main content -->
             <div class="flex-1 overflow-auto transition-all duration-300 ease-in-out" 
-                 :class="{'lg:ml-64': window.innerWidth >= 1024 && sidebarOpen}">
+                 :class="{'lg:ml-64': sidebarOpen, 'lg:ml-0': !sidebarOpen}">
+                <!-- Close sidebar when clicking on content on mobile -->
+                <div x-show="sidebarOpen"
+                     x-transition:enter="transition-opacity duration-300 ease-in-out"
+                     x-transition:enter-start="opacity-0"
+                     x-transition:enter-end="opacity-75"
+                     x-transition:leave="transition-opacity duration-200 ease-in-out"
+                     x-transition:leave-start="opacity-75"
+                     x-transition:leave-end="opacity-0"
+                     class="fixed inset-0 bg-gray-600 bg-opacity-75 z-30 lg:hidden" 
+                     @click="sidebarOpen = false" 
+                     x-cloak>
+                </div>
                 <div class="flex flex-col h-full">
                     <!-- Mobile menu button -->
                     <div class="lg:hidden flex items-center px-4 py-4">
@@ -153,6 +153,7 @@
 
     <!-- Alpine.js & Plugins -->
     <script defer src="https://unpkg.com/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://unpkg.com/@alpinejs/transition@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
     <!-- Flowbite JS -->

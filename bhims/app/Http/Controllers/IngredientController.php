@@ -14,13 +14,76 @@ class IngredientController extends Controller
     /**
      * Display a listing of the ingredients.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $ingredients = Ingredient::with('category')
-            ->latest()
-            ->paginate(10);
+        $query = Ingredient::with('category');
 
-        return view('ingredients.index', compact('ingredients'));
+        // Search filter
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        // Category filter
+        if ($request->has('category') && !empty($request->category)) {
+            $query->where('category_id', $request->category);
+        }
+
+        $ingredients = $query->latest()->paginate(10);
+        $categories = \App\Models\Category::all();
+
+        // Return JSON response for AJAX requests
+        if ($request->ajax() || $request->has('ajax')) {
+            $view = view('ingredients.partials.table', compact('ingredients'))->render();
+            $pagination = $ingredients->appends($request->except('page'))->links()->toHtml();
+            
+            return response()->json([
+                'html' => $view,
+                'pagination' => $pagination
+            ]);
+        }
+
+        return view('ingredients.index', compact('ingredients', 'categories'));
+    }
+    
+    /**
+     * Display a listing of low stock ingredients.
+     */
+    public function lowStock(Request $request)
+    {
+        $query = Ingredient::with('category')
+            ->whereColumn('current_stock', '<=', 'minimum_stock')
+            ->where('minimum_stock', '>', 0);
+
+        // Search filter
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        // Category filter
+        if ($request->has('category') && !empty($request->category)) {
+            $query->where('category_id', $request->category);
+        }
+
+        $ingredients = $query->latest()->paginate(10);
+        $categories = \App\Models\Category::all();
+        
+        // Set a flag to indicate this is the low stock view
+        $isLowStockPage = true;
+
+        // Return JSON response for AJAX requests
+        if ($request->ajax() || $request->has('ajax')) {
+            $view = view('ingredients.partials.table', compact('ingredients', 'isLowStockPage'))->render();
+            $pagination = $ingredients->appends($request->except('page'))->links()->toHtml();
+            
+            return response()->json([
+                'html' => $view,
+                'pagination' => $pagination
+            ]);
+        }
+
+        return view('ingredients.index', compact('ingredients', 'categories', 'isLowStockPage'));
     }
 
     /**
@@ -37,32 +100,71 @@ class IngredientController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'category_id' => 'required|exists:categories,id',
-            'unit_of_measure' => 'required|string|max:50',
-            'current_stock' => 'required|numeric|min:0',
-            'minimum_stock' => 'required|numeric|min:0',
-            'unit_price' => 'required|numeric|min:0',
-            'is_active' => 'boolean',
-        ]);
-
-        $ingredient = Ingredient::create($validated);
-
-        // Record initial stock movement
-        if ($ingredient->current_stock > 0) {
-            StockMovement::create([
-                'ingredient_id' => $ingredient->id,
-                'quantity' => $ingredient->current_stock,
-                'movement_type' => 'initial',
-                'notes' => 'Initial stock',
-                'user_id' => Auth::id(),
+        try {
+            // Debug the request data
+            \Log::info('Form submission data:', $request->all());
+            
+            // Manually validate the request
+            $validator = \Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'category_id' => 'required|exists:categories,id',
+                'unit_of_measure' => 'required|string|max:50',
+                'current_stock' => 'required|numeric|min:0',
+                'minimum_stock' => 'required|numeric|min:0',
+                'unit_price' => 'required|numeric|min:0',
+                'is_active' => 'sometimes|boolean',
             ]);
-        }
 
-        return redirect()->route('ingredients.index')
-            ->with('success', 'Ingredient created successfully.');
+            if ($validator->fails()) {
+                \Log::error('Validation failed:', $validator->errors()->toArray());
+                return redirect()->back()
+                    ->withErrors($validator)
+                    ->withInput();
+            }
+
+
+            DB::beginTransaction();
+
+            // Create the ingredient first
+            $ingredient = Ingredient::create([
+                'name' => $request->name,
+                'description' => $request->description,
+                'category_id' => $request->category_id,
+                'unit_of_measure' => $request->unit_of_measure,
+                'current_stock' => $request->current_stock,
+                'minimum_stock' => $request->minimum_stock,
+                'unit_price' => $request->unit_price,
+                'is_active' => $request->has('is_active') ? 1 : 0,
+            ]);
+
+
+            // Record initial stock movement if there's any stock
+            if ($ingredient->current_stock > 0) {
+                $movement = new StockMovement([
+                    'ingredient_id' => $ingredient->id,
+                    'quantity' => $ingredient->current_stock,
+                    'movement_type' => 'in',
+                    'notes' => 'Initial stock',
+                    'user_id' => Auth::id(),
+                ]);
+                $movement->save();
+            }
+
+            DB::commit();
+
+            return redirect()->route('ingredients.index')
+                ->with('success', 'Ingredient created successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error creating ingredient: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            
+            return redirect()->back()
+                ->with('error', 'Error creating ingredient: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 
     /**
@@ -180,19 +282,5 @@ class IngredientController extends Controller
             return redirect()->route('ingredients.show', $ingredient)
                 ->with('success', 'Stock adjusted successfully.');
         });
-    }
-
-    /**
-     * Get low stock ingredients.
-     */
-    public function lowStock()
-    {
-        $ingredients = Ingredient::whereColumn('current_stock', '<=', 'minimum_stock')
-            ->where('is_active', true)
-            ->with('category')
-            ->orderBy('current_stock')
-            ->paginate(10);
-
-        return view('ingredients.low-stock', compact('ingredients'));
     }
 }
