@@ -11,17 +11,39 @@
         const urlParams = new URLSearchParams(window.location.search);
         this.search = urlParams.get('search') || '';
         this.status = urlParams.get('status') || '';
+        
+        // Handle initial page load with URL parameters
+        this.$nextTick(() => {
+            if (this.search || this.status) {
+                this.applyFilters(false);
+            }
+        });
+        
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', () => {
+            const newParams = new URLSearchParams(window.location.search);
+            const newSearch = newParams.get('search') || '';
+            const newStatus = newParams.get('status') || '';
+            
+            if (this.search !== newSearch || this.status !== newStatus) {
+                this.search = newSearch;
+                this.status = newStatus;
+                this.applyFilters(false);
+            }
+        });
     },
     
-    applyFilters() {
+    applyFilters(updateUrl = true) {
         this.loading = true;
         const params = new URLSearchParams();
         
         if (this.search) params.append('search', this.search);
         if (this.status) params.append('status', this.status);
         
-        // Add ajax flag for JSON response
-        params.append('ajax', '1');
+        // Only add ajax flag if this is an AJAX request (not initial page load)
+        if (updateUrl) {
+            params.append('ajax', '1');
+        }
         
         fetch(`{{ route('suppliers.index') }}?${params.toString()}`)
             .then(response => response.json())
@@ -33,9 +55,13 @@
                 if (tableContainer) tableContainer.innerHTML = data.html;
                 if (paginationContainer) paginationContainer.innerHTML = data.pagination || '';
                 
-                // Update URL without reloading the page
-                const newUrl = `${window.location.pathname}?${params.toString().replace('&ajax=1', '')}`;
-                window.history.pushState({ path: newUrl }, '', newUrl);
+                // Only update URL if this was triggered by a user action
+                if (updateUrl) {
+                    const cleanParams = new URLSearchParams(params);
+                    cleanParams.delete('ajax');
+                    const newUrl = `${window.location.pathname}${cleanParams.toString() ? '?' + cleanParams.toString() : ''}`;
+                    window.history.pushState({}, '', newUrl);
+                }
                 
                 // Reattach event listeners to pagination links
                 this.attachPaginationListeners();
@@ -54,13 +80,19 @@
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 const url = new URL(link.href);
-                window.history.pushState({}, '', url);
                 
-                // Update the page parameter and trigger a new request
+                // Update the page parameter
                 const page = url.searchParams.get('page');
                 if (page) {
+                    // Update URL without triggering a page reload
+                    const cleanUrl = new URL(window.location);
+                    cleanUrl.searchParams.set('page', page);
+                    window.history.pushState({}, '', cleanUrl);
+                    
+                    // Trigger a new request with the updated page
                     const currentParams = new URLSearchParams(window.location.search);
-                    currentParams.set('page', page);
+                    if (this.search) currentParams.set('search', this.search);
+                    if (this.status) currentParams.set('status', this.status);
                     currentParams.set('ajax', '1');
                     
                     fetch(`${window.location.pathname}?${currentParams.toString()}`)
@@ -84,6 +116,16 @@
         this.search = '';
         this.status = '';
         this.applyFilters();
+    },
+    
+    // This will be called when Alpine is initialized
+    mounted() {
+        // Check if we have any search parameters in the URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('search') || urlParams.has('status')) {
+            this.search = urlParams.get('search') || '';
+            this.status = urlParams.get('status') || '';
+        }
     }
 }" x-init="$nextTick(() => {
     attachPaginationListeners();
@@ -174,7 +216,11 @@
 
                 <!-- Pagination -->
                 <div id="pagination-container" class="mt-4">
-                    {{ $suppliers->withQueryString()->links() }}
+                    @if(request()->ajax())
+                        {!! $suppliers->withQueryString()->links() !!}
+                    @else
+                        {{ $suppliers->withQueryString()->links() }}
+                    @endif
                 </div>
             </div>
         </div>
