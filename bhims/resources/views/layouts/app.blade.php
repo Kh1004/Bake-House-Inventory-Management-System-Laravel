@@ -93,8 +93,8 @@
     }
 }" x-init="init">
     <div class="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
-        <!-- Top Navigation -->
-        @include('layouts.top-navigation')
+        <!-- Header -->
+        @include('layouts.partials.header')
 
         <!-- Sidebar Backdrop -->
         <div x-show="sidebarOpen" @click="sidebarOpen = false" 
@@ -105,24 +105,24 @@
 
         <div class="flex flex-1 overflow-hidden">
             <!-- Sidebar -->
-            <div x-show="sidebarOpen"
-                 x-transition:enter="transition ease-in-out duration-150"
-                 x-transition:enter-start="-translate-x-full lg:translate-x-0"
+            <div x-show="sidebarOpen || $screen('lg')"
+                 x-transition:enter="transition ease-in-out duration-300"
+                 x-transition:enter-start="-translate-x-full"
                  x-transition:enter-end="translate-x-0"
-                 x-transition:leave="transition ease-in-out duration-150"
+                 x-transition:leave="transition ease-in-out duration-300"
                  x-transition:leave-start="translate-x-0"
-                 x-transition:leave-end="-translate-x-full lg:translate-x-0"
+                 x-transition:leave-end="-translate-x-full"
                  @click.away="if (window.innerWidth < 1024) sidebarOpen = false"
-                 class="fixed inset-y-0 left-0 z-30 w-64 h-full overflow-y-auto bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 lg:static lg:flex lg:flex-shrink-0 lg:flex-col lg:w-64 transform transition-transform duration-200 ease-in-out"
-                 :class="{'-translate-x-full lg:translate-x-0': !sidebarOpen}"
+                 :class="{'fixed lg:fixed': true, '-translate-x-full lg:translate-x-0': !sidebarOpen && !$screen('lg') }"
+                 class="fixed inset-y-0 left-0 z-30 w-64 h-full overflow-y-auto bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-300 ease-in-out flex flex-col flex-shrink-0"
                  x-cloak>
-                @include('layouts.navigation')
+                @include('layouts.partials.sidebar')
             </div>
 
             <!-- Main content area -->
-            <div class="flex-1 flex flex-col min-h-0">
-                <!-- Page header -->
-                <header class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-10">
+            <div class="flex-1 flex flex-col min-h-0 pt-16 lg:pt-0 lg:pl-64">
+                <!-- Page title -->
+                <div class="bg-white dark:bg-gray-800 shadow-sm">
                     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center">
@@ -140,7 +140,7 @@
                             </div>
                         </div>
                     </div>
-                </header>
+                </div>
 
                 <!-- Page content -->
                 <main class="flex-1 overflow-y-auto focus:outline-none" tabindex="0">
@@ -177,6 +177,9 @@
                         @yield('content', $slot ?? '')
                     </div>
                 </main>
+                
+                <!-- Footer -->
+                @include('layouts.partials.footer')
             </div>
         </div>
     </div>

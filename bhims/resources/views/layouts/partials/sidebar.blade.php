@@ -92,27 +92,27 @@
             </div>
         </div>
 
-        <!-- Suppliers -->
-        <div x-data="{ open: {{ in_array($currentRoute, ['suppliers.index', 'suppliers.create', 'suppliers.edit']) ? 'true' : 'false' }} }">
+        <!-- Products -->
+        <div x-data="{ open: {{ in_array($currentRoute, ['products.index', 'products.create', 'products.edit']) ? 'true' : 'false' }} }">
             <button @click="open = !open" 
-                    class="group w-full flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive(['suppliers.index', 'suppliers.create', 'suppliers.edit']) }} transition-colors duration-200">
-                <svg class="mr-3 h-6 w-6 flex-shrink-0 {{ in_array($currentRoute, ['suppliers.index', 'suppliers.create', 'suppliers.edit']) ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }}" 
+                    class="group w-full flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive(['products.index', 'products.create', 'products.edit']) }} transition-colors duration-200">
+                <svg class="mr-3 h-6 w-6 flex-shrink-0 {{ in_array($currentRoute, ['products.index', 'products.create', 'products.edit']) ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }}" 
                      fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
-                {{ __('Suppliers') }}
+                {{ __('Products') }}
                 <svg :class="{'rotate-90': open}" class="ml-auto h-5 w-5 transform transition-transform duration-200 text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300" 
                      fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
             </button>
             <div x-show="open" class="mt-1 space-y-1 pl-12">
-                <a href="{{ route('suppliers.index') }}" 
-                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('suppliers.index') }} transition-colors duration-200">
-                    {{ __('All Suppliers') }}
+                <a href="{{ route('products.index') }}" 
+                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('products.index') }} transition-colors duration-200">
+                    {{ __('All Products') }}
                 </a>
-                <a href="{{ route('suppliers.create') }}" 
-                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('suppliers.create') }} transition-colors duration-200">
+                <a href="{{ route('products.create') }}" 
+                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('products.create') }} transition-colors duration-200">
                     {{ __('Add New') }}
                 </a>
             </div>
@@ -144,6 +144,32 @@
             </div>
         </div>
 
+        <!-- Customers -->
+        <div x-data="{ open: {{ in_array($currentRoute, ['customers.index', 'customers.create', 'customers.edit', 'customers.show']) ? 'true' : 'false' }} }">
+            <button @click="open = !open" 
+                    class="group w-full flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive(['customers.index', 'customers.create', 'customers.edit', 'customers.show']) }} transition-colors duration-200">
+                <svg class="mr-3 h-6 w-6 flex-shrink-0 {{ in_array($currentRoute, ['customers.index', 'customers.create', 'customers.edit', 'customers.show']) ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }}" 
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                {{ __('Customers') }}
+                <svg :class="{'rotate-90': open}" class="ml-auto h-5 w-5 transform transition-transform duration-200 text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300" 
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+            <div x-show="open" class="mt-1 space-y-1 pl-12">
+                <a href="{{ route('customers.index') }}" 
+                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('customers.index') }} transition-colors duration-200">
+                    {{ __('All Customers') }}
+                </a>
+                <a href="{{ route('customers.create') }}" 
+                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('customers.create') }} transition-colors duration-200">
+                    {{ __('Add Customer') }}
+                </a>
+            </div>
+        </div>
+
         <!-- Reports -->
         <div x-data="{ open: {{ in_array($currentRoute, ['reports.sales', 'reports.inventory']) ? 'true' : 'false' }} }">
             <button @click="open = !open" 
@@ -169,30 +195,34 @@
                 </a>
             </div>
         </div>
+    </nav>
 
-        <!-- User Section -->
-        <div class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
-            <a href="{{ route('profile.edit') }}" 
-               class="group flex items-center px-2 py-2 text-sm font-medium rounded-md {{ request()->routeIs('profile.edit') ? 'bg-gray-100 text-gray-900 dark:bg-gray-700 dark:text-white' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white' }}">
-                <svg class="mr-3 h-6 w-6 {{ request()->routeIs('profile.edit') ? 'text-gray-500' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }}" 
-                     xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                {{ __('Profile') }}
-            </a>
-            
-            <form method="POST" action="{{ route('logout') }}" class="mt-1">
+    <!-- User Profile -->
+    <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <div class="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-700 dark:text-indigo-200 font-medium">
+                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-200">
+                        {{ Auth::user()->name }}
+                    </p>
+                    <div class="flex space-x-2">
+                        <a href="{{ route('profile.edit') }}" class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300">
+                            {{ __('View Profile') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <form method="POST" action="{{ route('logout') }}" class="ml-2">
                 @csrf
-                <button type="submit" 
-                        class="group flex items-center w-full px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white">
-                    <svg class="mr-3 h-6 w-6 text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300" 
-                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <button type="submit" class="p-1.5 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none" title="{{ __('Sign Out') }}">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
-                    {{ __('Sign out') }}
                 </button>
             </form>
         </div>
-    </nav>
+    </div>
 </div>

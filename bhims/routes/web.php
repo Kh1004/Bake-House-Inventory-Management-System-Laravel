@@ -44,8 +44,23 @@ Route::middleware(['auth'])->group(function () {
     // Categories Routes
     Route::resource('categories', CategoryController::class);
     
+    // Products Routes
+    Route::resource('products', \App\Http\Controllers\ProductController::class);
+    
     // Suppliers Routes
     Route::resource('suppliers', \App\Http\Controllers\SupplierController::class);
+    
+    // Sales Routes
+    Route::resource('sales', \App\Http\Controllers\SaleController::class);
+    
+    // Customers Routes
+    Route::resource('customers', \App\Http\Controllers\CustomerController::class);
+    
+    // Reports Routes
+    Route::prefix('reports')->group(function () {
+        Route::get('/sales', [\App\Http\Controllers\ReportController::class, 'sales'])->name('reports.sales');
+        Route::get('/inventory', [\App\Http\Controllers\ReportController::class, 'inventory'])->name('reports.inventory');
+    });
 });
 
 // Debug Route (remove in production)
