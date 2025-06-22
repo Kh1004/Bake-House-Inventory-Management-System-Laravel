@@ -112,6 +112,17 @@
                     const resetButton = document.getElementById('resetFilters');
                     const ingredientsTable = document.getElementById('ingredients-table');
                     let debounceTimer;
+                    
+                    // Initialize with current URL parameters
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const initialSearch = urlParams.get('search') || '';
+                    const initialCategory = urlParams.get('category') || '';
+                    
+                    // Set initial values
+                    searchInput.value = initialSearch;
+                    if (categorySelect) {
+                        categorySelect.value = initialCategory;
+                    }
 
                     function showLoading() {
                         ingredientsTable.innerHTML = `
@@ -137,8 +148,8 @@
                     }
 
                     function fetchIngredients() {
-                        const search = searchInput.value.trim();
-                        const category = categorySelect.value;
+                        const search = searchInput ? searchInput.value.trim() : '';
+                        const category = categorySelect ? categorySelect.value : '';
                         
                         showLoading();
                         
@@ -146,9 +157,14 @@
                         if (search) params.append('search', search);
                         if (category) params.append('category', category);
                         
-                        updateURL(params);
+                        // Update URL without page reload
+                        const newUrl = `${window.location.pathname}?${params.toString()}`;
+                        window.history.pushState({ path: newUrl }, '', newUrl);
                         
-                        fetch(`${window.location.pathname}?${params.toString()}&ajax=1`)
+                        // Add ajax flag to the params for the request
+                        params.append('ajax', '1');
+                        
+                        fetch(`${window.location.pathname}?${params.toString()}`)
                             .then(response => {
                                 if (!response.ok) throw new Error('Network response was not ok');
                                 return response.json();
@@ -188,12 +204,13 @@
                         if (e.target.closest('.pagination a')) {
                             e.preventDefault();
                             const url = new URL(e.target.closest('a').href);
-                            window.history.pushState({}, '', url);
                             
-                            // Update the URL parameters from the clicked pagination link
+                            // Update the URL and form fields
+                            window.history.pushState({}, '', url);
                             const searchParams = new URLSearchParams(url.search);
-                            searchInput.value = searchParams.get('search') || '';
-                            categorySelect.value = searchParams.get('category') || '';
+                            
+                            if (searchInput) searchInput.value = searchParams.get('search') || '';
+                            if (categorySelect) categorySelect.value = searchParams.get('category') || '';
                             
                             fetch(url + '&ajax=1')
                                 .then(response => response.json())
@@ -210,15 +227,29 @@
                     });
                     
                     // Event listeners
-                    searchInput.addEventListener('input', debounceFetch);
-                    categorySelect.addEventListener('change', fetchIngredients);
-                    
-                    resetButton.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        searchInput.value = '';
-                        categorySelect.value = '';
-                        fetchIngredients();
+                    searchInput.addEventListener('input', function() {
+                        clearTimeout(debounceTimer);
+                        debounceTimer = setTimeout(fetchIngredients, 300);
                     });
+                    
+                    if (categorySelect) {
+                        categorySelect.addEventListener('change', function() {
+                            clearTimeout(debounceTimer);
+                            fetchIngredients();
+                        });
+                    }
+                    
+                    if (resetButton) {
+                        resetButton.addEventListener('click', function() {
+                            searchInput.value = '';
+                            if (categorySelect) {
+                                categorySelect.value = '';
+                            }
+                            // Clear the URL parameters
+                            window.history.pushState({}, '', window.location.pathname);
+                            fetchIngredients();
+                        });
+                    }
                     
                     // Handle browser back/forward
                     window.addEventListener('popstate', function() {

@@ -1,8 +1,77 @@
 @extends('layouts.app')
 
 @section('content')
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('ingredientForm');
+        
+        if (form) {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                console.log('Form submission started');
+                
+                try {
+                    const formData = new FormData(form);
+                    console.log('Form data:', Object.fromEntries(formData.entries()));
+                    
+                    const response = await fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams(formData)
+                    });
+
+                    console.log('Response status:', response.status);
+                    
+                    if (response.redirected) {
+                        console.log('Redirecting to:', response.url);
+                        window.location.href = response.url;
+                        return;
+                    }
+
+                    const data = await response.json().catch(() => ({}));
+                    console.log('Response data:', data);
+
+                    if (response.ok) {
+                        window.location.href = '{{ route("ingredients.index") }}';
+                    } else {
+                        const errorMsg = data.message || 'An error occurred';
+                        console.error('Server error:', errorMsg);
+                        alert('Error: ' + errorMsg);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error submitting form: ' + error.message);
+                }
+            });
+        }
+    });
+</script>
+@endpush
+
 <div class="py-6">
     <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+        @if(session('error'))
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+                <p class="font-bold">Error</p>
+                <p>{{ session('error') }}</p>
+            </div>
+        @endif
+        @if($errors->any())
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+                <p class="font-bold">Validation Error</p>
+                <ul class="list-disc list-inside">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
         <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
             <div class="p-6 bg-white border-b border-gray-200">
                 <!-- Header -->
@@ -20,13 +89,28 @@
                 </div>
 
                 <!-- Form -->
-                <form action="{{ route('ingredients.store') }}" method="POST" class="space-y-6">
+                <form id="ingredientForm" action="{{ route('ingredients.store') }}" method="POST" class="space-y-6">
                     @csrf
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}" id="csrf-token">
 
                     <div class="bg-gray-50 p-6 rounded-lg">
                         <h3 class="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Category -->
+                            <div>
+                                <label for="category_id" class="block text-sm font-medium text-gray-700">Category</label>
+                                <select id="category_id" name="category_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md @error('category_id') border-red-300 @enderror">
+                                    <option value="">Select a category</option>
+                                    @foreach(\App\Models\Category::orderBy('name')->get() as $category)
+                                        <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('category_id')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            
                             <!-- Name -->
                             <div>
                                 <label for="name" class="block text-sm font-medium text-gray-700">Ingredient Name *</label>
@@ -68,9 +152,10 @@
                             <!-- Status -->
                             <div class="flex items-center">
                                 <div class="flex items-center h-5">
-                                    <input id="is_active" name="is_active" type="checkbox" 
+                                    <input id="is_active" name="is_active" type="checkbox" value="1"
                                         {{ old('is_active', true) ? 'checked' : '' }}
                                         class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded">
+                                    <input type="hidden" name="is_active" value="0">
                                 </div>
                                 <div class="ml-3 text-sm">
                                     <label for="is_active" class="font-medium text-gray-700">Active</label>

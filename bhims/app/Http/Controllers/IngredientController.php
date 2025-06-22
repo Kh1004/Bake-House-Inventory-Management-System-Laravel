@@ -91,7 +91,11 @@ class IngredientController extends Controller
      */
     public function create()
     {
-        $categories = Category::all();
+        $categories = \App\Models\Category::all();
+        if ($categories->isEmpty()) {
+            return redirect()->route('categories.create')
+                ->with('warning', 'Please create at least one category before adding ingredients.');
+        }
         return view('ingredients.create', compact('categories'));
     }
 
@@ -100,45 +104,41 @@ class IngredientController extends Controller
      */
     public function store(Request $request)
     {
+        \Log::info('=== Starting ingredient store process ===');
+        \Log::info('Request data:', $request->all());
+        
         try {
-            // Debug the request data
-            \Log::info('Form submission data:', $request->all());
-            
-            // Manually validate the request
-            $validator = \Validator::make($request->all(), [
+            // Validate the request
+            $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
                 'category_id' => 'required|exists:categories,id',
                 'unit_of_measure' => 'required|string|max:50',
                 'current_stock' => 'required|numeric|min:0',
                 'minimum_stock' => 'required|numeric|min:0',
-                'unit_price' => 'required|numeric|min:0',
+                'unit_price' => 'required|numeric|min:0.01',
                 'is_active' => 'sometimes|boolean',
             ]);
-
-            if ($validator->fails()) {
-                \Log::error('Validation failed:', $validator->errors()->toArray());
-                return redirect()->back()
-                    ->withErrors($validator)
-                    ->withInput();
-            }
-
-
+            
+            \Log::info('Validation passed', $validated);
+            
             DB::beginTransaction();
-
-            // Create the ingredient first
-            $ingredient = Ingredient::create([
-                'name' => $request->name,
-                'description' => $request->description,
-                'category_id' => $request->category_id,
-                'unit_of_measure' => $request->unit_of_measure,
-                'current_stock' => $request->current_stock,
-                'minimum_stock' => $request->minimum_stock,
-                'unit_price' => $request->unit_price,
-                'is_active' => $request->has('is_active') ? 1 : 0,
+            
+            // Create the ingredient
+            $ingredient = new Ingredient([
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+                'category_id' => $validated['category_id'],
+                'unit_of_measure' => $validated['unit_of_measure'],
+                'current_stock' => $validated['current_stock'],
+                'minimum_stock' => $validated['minimum_stock'],
+                'unit_price' => $validated['unit_price'],
+                'is_active' => $request->boolean('is_active', false) ? 1 : 0,
             ]);
-
-
+            
+            $ingredient->save();
+            \Log::info('Ingredient created', ['id' => $ingredient->id]);
+            
             // Record initial stock movement if there's any stock
             if ($ingredient->current_stock > 0) {
                 $movement = new StockMovement([
@@ -149,17 +149,56 @@ class IngredientController extends Controller
                     'user_id' => Auth::id(),
                 ]);
                 $movement->save();
+                \Log::info('Stock movement recorded', ['movement_id' => $movement->id]);
             }
-
+            
             DB::commit();
-
+            \Log::info('=== Transaction committed successfully ===');
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Ingredient created successfully',
+                    'redirect' => route('ingredients.index')
+                ]);
+            }
+            
             return redirect()->route('ingredients.index')
                 ->with('success', 'Ingredient created successfully.');
-
+                
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            \Log::error('Validation error creating ingredient', [
+                'errors' => $e->errors(),
+                'input' => $request->all()
+            ]);
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => $e->errors(),
+                    'message' => 'Validation failed',
+                ], 422);
+            }
+            
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput();
+                
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error creating ingredient: ' . $e->getMessage());
-            \Log::error($e->getTraceAsString());
+            \Log::error('Error creating ingredient', [
+                'message' => $e->getMessage(),
+                'exception' => get_class($e),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error creating ingredient: ' . $e->getMessage(),
+                ], 500);
+            }
             
             return redirect()->back()
                 ->with('error', 'Error creating ingredient: ' . $e->getMessage())
