@@ -68,15 +68,15 @@
                     <div class="w-64">
                         <div class="flex justify-between text-base font-medium text-gray-900 dark:text-white mb-2">
                             <span>Subtotal:</span>
-                            <span id="subtotal">₹0.00</span>
+                            <span id="subtotal">LKR 0.00</span>
                         </div>
                         <div class="flex justify-between text-base font-medium text-gray-900 dark:text-white mb-2">
                             <span>Tax (0%):</span>
-                            <span id="tax">₹0.00</span>
+                            <span id="tax">LKR 0.00</span>
                         </div>
                         <div class="flex justify-between text-lg font-bold text-gray-900 dark:text-white pt-2 border-t border-gray-200 dark:border-gray-600">
                             <span>Total:</span>
-                            <span id="total">₹0.00</span>
+                            <span id="total">LKR 0.00</span>
                         </div>
                     </div>
                 </div>
@@ -104,7 +104,7 @@
                 <option value="">Select a product</option>
                 @foreach($products as $product)
                     <option value="{{ $product->id }}" data-price="{{ $product->selling_price }}">
-                        {{ $product->name }} (₹{{ number_format($product->selling_price, 2) }})
+                        {{ $product->name }} (LKR {{ number_format($product->selling_price, 2) }})
                     </option>
                 @endforeach
             </select>
@@ -118,7 +118,7 @@
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Price</label>
             <div class="mt-1 flex rounded-md shadow-sm">
                 <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm dark:bg-gray-600 dark:border-gray-600 dark:text-gray-300">
-                    ₹
+                    LKR
                 </span>
                 <input type="number" step="0.01" min="0"
                        class="price-input flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -127,7 +127,7 @@
         </div>
         <div class="col-span-1">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Total</label>
-            <div class="mt-1 text-sm font-medium text-gray-900 dark:text-white item-total">₹0.00</div>
+            <div class="mt-1 text-sm font-medium text-gray-900 dark:text-white item-total">LKR 0.00</div>
         </div>
         <div class="col-span-1">
             <button type="button" class="remove-product text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const itemTotal = row.querySelector('.item-total');
         
         if (!select || !select.value || !quantityInput || !quantityInput.value) {
-            itemTotal.textContent = '₹0.00';
+            itemTotal.textContent = 'LKR 0.00';
             return;
         }
         
@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const quantity = parseFloat(quantityInput.value);
         const total = price * quantity;
         
-        itemTotal.textContent = '₹' + total.toFixed(2);
+        itemTotal.textContent = 'LKR ' + total.toFixed(2);
     }
 
     // Update the subtotal, tax, and total
@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.product-row').forEach(row => {
             const itemTotal = row.querySelector('.item-total');
             if (itemTotal) {
-                const amount = parseFloat(itemTotal.textContent.replace('₹', '')) || 0;
+                const amount = parseFloat(itemTotal.textContent.replace('LKR', '')) || 0;
                 subtotal += amount;
             }
         });
@@ -263,9 +263,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const tax = 0;
         const total = subtotal + tax;
         
-        document.getElementById('subtotal').textContent = '₹' + subtotal.toFixed(2);
-        document.getElementById('tax').textContent = '₹' + tax.toFixed(2);
-        document.getElementById('total').textContent = '₹' + total.toFixed(2);
+        document.getElementById('subtotal').textContent = 'LKR ' + subtotal.toFixed(2);
+        document.getElementById('tax').textContent = 'LKR ' + tax.toFixed(2);
+        document.getElementById('total').textContent = 'LKR ' + total.toFixed(2);
         
         // Update the hidden total field in the form if it exists
         const totalInput = document.getElementById('total_amount');

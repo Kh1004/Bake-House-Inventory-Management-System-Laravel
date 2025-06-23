@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Product extends Model
 {
@@ -36,6 +37,15 @@ class Product extends Model
     public function stockMovements(): HasMany
     {
         return $this->hasMany(ProductStockMovement::class);
+    }
+
+    /**
+     * The sales that belong to the product.
+     */
+    public function sales(): BelongsToMany
+    {
+        return $this->belongsToMany(Sale::class, 'sale_products')
+            ->withPivot(['quantity', 'unit_price', 'total_price']);
     }
 
     /**

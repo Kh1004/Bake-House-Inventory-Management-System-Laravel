@@ -125,7 +125,7 @@
                                             #{{ str_pad($sale->id, 6, '0', STR_PAD_LEFT) }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white text-right">
-                                            ₹{{ number_format($sale->total_amount, 2) }}
+                                            LKR {{ number_format($sale->total_amount, 2) }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right">
                                             @if($sale->payment_status === 'paid')

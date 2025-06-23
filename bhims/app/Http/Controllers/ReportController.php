@@ -19,13 +19,13 @@ class ReportController extends Controller
 
         $query = Sale::query()
             ->select(
-                DB::raw('DATE(sale_date) as date'),
+                DB::raw('DATE(created_at) as date'),
                 DB::raw('COUNT(*) as total_sales'),
-                DB::raw('SUM(total_amount) as total_revenue'),
-                DB::raw('SUM(CASE WHEN payment_status = "paid" THEN total_amount ELSE 0 END) as paid_amount'),
-                DB::raw('COUNT(CASE WHEN payment_status = "paid" THEN 1 END) as paid_count')
+                DB::raw('SUM(total) as total_revenue'),
+                DB::raw('SUM(CASE WHEN payment_method IS NOT NULL THEN total ELSE 0 END) as paid_amount'),
+                DB::raw('COUNT(CASE WHEN payment_method IS NOT NULL THEN 1 END) as paid_count')
             )
-            ->whereBetween('sale_date', [$startDate, $endDate])
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->groupBy('date')
             ->orderBy('date');
 
@@ -43,13 +43,27 @@ class ReportController extends Controller
         }
 
         // Top selling products
-        $topProducts = Product::withCount(['sales as total_quantity' => function($query) use ($startDate, $endDate) {
-                $query->select(DB::raw('COALESCE(SUM(sale_items.quantity), 0)'))
-                    ->join('sale_items', 'sale_items.product_id', '=', 'products.id')
-                    ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
-                    ->whereBetween('sales.sale_date', [$startDate, $endDate]);
-            }])
-            ->orderByDesc('total_quantity')
+        $topProducts = Product::select([
+                'products.id',
+                'products.name',
+                'products.sku',
+                'products.selling_price',
+                DB::raw('COALESCE(SUM(sale_products.quantity), 0) as total_quantity'),
+                DB::raw('COALESCE(SUM(sale_products.quantity * sale_products.unit_price), 0) as total_revenue')
+            ])
+            ->leftJoin('sale_products', 'products.id', '=', 'sale_products.product_id')
+            ->leftJoin('sales', function($join) use ($startDate, $endDate) {
+                $join->on('sales.id', '=', 'sale_products.sale_id')
+                    ->whereBetween('sales.created_at', [$startDate, $endDate])
+                    ->whereNull('sales.deleted_at');
+            })
+            ->groupBy([
+                'products.id',
+                'products.name',
+                'products.sku',
+                'products.selling_price'
+            ])
+            ->orderBy('total_quantity', 'desc')
             ->limit(5)
             ->get();
 
@@ -72,15 +86,17 @@ class ReportController extends Controller
         $sortBy = $request->input('sort_by', 'current_stock');
         $sortOrder = $request->input('sort_order', 'asc');
         
-        $ingredients = Ingredient::with(['category', 'unit'])
-            ->withSum(['inventoryLogs as total_in' => function($query) {
-                $query->where('type', 'purchase')
-                    ->select(DB::raw('COALESCE(SUM(quantity), 0)'));
-            }])
-            ->withSum(['inventoryLogs as total_out' => function($query) {
-                $query->whereIn('type', ['sale', 'waste'])
-                    ->select(DB::raw('COALESCE(SUM(quantity), 0)'));
-            }])
+        $ingredients = Ingredient::with('category')
+            ->withSum(['stockMovements as total_in' => function($query) {
+                $query->where('movement_type', 'purchase');
+            }], 'quantity')
+            ->withSum(['stockMovements as total_out' => function($query) {
+                $query->whereIn('movement_type', ['sale', 'waste']);
+            }], 'quantity')
+            ->withCasts([
+                'total_in' => 'float',
+                'total_out' => 'float'
+            ])
             ->orderBy($sortBy, $sortOrder)
             ->paginate(20);
 
