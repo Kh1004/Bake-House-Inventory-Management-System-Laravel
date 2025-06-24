@@ -1,0 +1,18 @@
+Missing Features in report:
+    Low Stock Alerts:
+        No implementation for setting and displaying low stock thresholds
+        No alert system for items below minimum stock levels
+    Advanced Analytics:
+        No visualization dashboards (only data preparation is done)
+        Missing graphs and charts in the views
+        No trend analysis over time
+    Report Types:
+        No profit/loss reports
+        Missing inventory valuation reports
+        No sales performance by category or time period comparisons
+    Data Export:
+        No export to PDF/Excel/CSV functionality
+        No scheduled report generation
+    User Notifications:
+        No email/SMS alerts for critical inventory levels
+        No automated report delivery
