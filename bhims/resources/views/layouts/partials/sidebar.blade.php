@@ -118,6 +118,48 @@
             </div>
         </div>
 
+        <!-- Suppliers -->
+        <div x-data="{ 
+            isOpen: {{ in_array($currentRoute, ['suppliers.index', 'suppliers.create', 'suppliers.edit', 'suppliers.show']) ? 'true' : 'false' }},
+            toggle() { this.isOpen = !this.isOpen },
+            init() {
+                // Auto-open if current route matches
+                if({{ in_array($currentRoute, ['suppliers.index', 'suppliers.create', 'suppliers.edit', 'suppliers.show']) ? 'true' : 'false' }}) {
+                    this.isOpen = true;
+                }
+            }
+        }">
+            <button @click="toggle" 
+                    class="group w-full flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive(['suppliers.index', 'suppliers.create', 'suppliers.edit', 'suppliers.show']) }} transition-colors duration-200">
+                <svg class="mr-3 h-6 w-6 flex-shrink-0 {{ in_array($currentRoute, ['suppliers.index', 'suppliers.create', 'suppliers.edit', 'suppliers.show']) ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }}" 
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                {{ __('Suppliers') }}
+                <svg :class="{'rotate-90': isOpen}" class="ml-auto h-5 w-5 transform transition-transform duration-200 text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300" 
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+            <div x-show="isOpen" 
+                 x-transition:enter="transition ease-out duration-100"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="transition ease-in duration-75"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="mt-1 space-y-1 pl-12">
+                <a href="{{ route('suppliers.index') }}" 
+                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('suppliers.index') }} transition-colors duration-200">
+                    {{ __('All Suppliers') }}
+                </a>
+                <a href="{{ route('suppliers.create') }}" 
+                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('suppliers.create') }} transition-colors duration-200">
+                    {{ __('Add Supplier') }}
+                </a>
+            </div>
+        </div>
+
         <!-- Sales -->
         <div x-data="{ open: {{ in_array($currentRoute, ['sales.index', 'sales.create', 'sales.show']) ? 'true' : 'false' }} }">
             <button @click="open = !open" 

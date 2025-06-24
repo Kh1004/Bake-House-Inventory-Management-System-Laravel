@@ -30,6 +30,13 @@ class SaleController extends Controller
 
     public function store(Request $request)
     {
+        // Debug the incoming request
+        \Log::info('Sale Request Data:', [
+            'all' => $request->all(),
+            'items' => $request->input('items'),
+            'hasItems' => $request->has('items')
+        ]);
+
         $validated = $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'items' => 'required|array|min:1',
@@ -42,13 +49,20 @@ class SaleController extends Controller
         DB::beginTransaction();
 
         try {
+            // Generate a unique invoice number
+            $invoiceNumber = 'INV-' . date('Ymd') . '-' . strtoupper(uniqid());
+            
             $sale = Sale::create([
                 'customer_id' => $validated['customer_id'],
-                'total_amount' => 0,
-                'payment_status' => $validated['payment_status'],
-                'sale_date' => now(),
-                'notes' => $validated['notes'] ?? null,
                 'user_id' => auth()->id(),
+                'invoice_number' => $invoiceNumber,
+                'subtotal' => 0,
+                'tax_amount' => 0, // You might want to calculate this based on your tax logic
+                'discount_amount' => 0,
+                'total' => 0,
+                'amount_paid' => 0, // This should be set based on payment status
+                'payment_method' => 'cash', // Default payment method, adjust as needed
+                'notes' => $validated['notes'] ?? null,
             ]);
 
             $totalAmount = 0;
@@ -72,16 +86,38 @@ class SaleController extends Controller
                 $this->updateInventory($product, $item['quantity'], 'sale');
             }
 
-            $sale->update(['total_amount' => $totalAmount]);
+            // Update the sale with calculated amounts
+            $sale->update([
+                'subtotal' => $totalAmount,
+                'total' => $totalAmount + $sale->tax_amount - $sale->discount_amount,
+                'amount_paid' => $validated['payment_status'] === 'paid' ? $totalAmount : 0,
+            ]);
             DB::commit();
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Sale completed successfully',
+                    'redirect' => route('sales.show', $sale)
+                ]);
+            }
 
             return redirect()->route('sales.show', $sale)
                 ->with('success', 'Sale completed successfully');
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Sale Error: ' . $e->getMessage());
-            return back()->with('error', 'Error processing sale: ' . $e->getMessage());
+            $errorMessage = 'Error processing sale: ' . $e->getMessage();
+            Log::error($errorMessage);
+            
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage
+                ], 422);
+            }
+            
+            return back()->with('error', $errorMessage);
         }
     }
 

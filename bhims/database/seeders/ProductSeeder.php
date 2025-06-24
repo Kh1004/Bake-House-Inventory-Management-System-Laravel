@@ -5,13 +5,20 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Product;
 use App\Models\Recipe;
+use App\Models\Category;
 
 class ProductSeeder extends Seeder
 {
     public function run()
     {
+        // Get recipes
         $breadRecipe = Recipe::where('name', 'Classic White Bread')->first();
         $cookiesRecipe = Recipe::where('name', 'Chocolate Chip Cookies')->first();
+        
+        // Get categories
+        $breadCategory = Category::where('name', 'Flours & Grains')->first();
+        $cookiesCategory = Category::where('name', 'Chocolate & Cocoa')->first();
+        $pastryCategory = Category::where('name', 'Fats & Oils')->first();
 
         $products = [
             [
@@ -23,6 +30,7 @@ class ProductSeeder extends Seeder
                 'selling_price' => 4.99,
                 'current_stock' => 50,
                 'minimum_stock' => 10,
+                'category_id' => $breadCategory->id, // Flours & Grains
             ],
             [
                 'name' => 'Chocolate Chip Cookies (6pk)',
@@ -33,6 +41,7 @@ class ProductSeeder extends Seeder
                 'selling_price' => 5.99,
                 'current_stock' => 30,
                 'minimum_stock' => 15,
+                'category_id' => $cookiesCategory->id, // Chocolate & Cocoa
             ],
             [
                 'name' => 'Artisan Sourdough Loaf',
@@ -43,6 +52,7 @@ class ProductSeeder extends Seeder
                 'selling_price' => 6.99,
                 'current_stock' => 25,
                 'minimum_stock' => 8,
+                'category_id' => $breadCategory->id, // Flours & Grains
             ],
             [
                 'name' => 'Whole Grain Bread Loaf',
@@ -53,6 +63,7 @@ class ProductSeeder extends Seeder
                 'selling_price' => 5.99,
                 'current_stock' => 30,
                 'minimum_stock' => 10,
+                'category_id' => $breadCategory->id, // Flours & Grains
             ],
             [
                 'name' => 'Croissant',
@@ -63,11 +74,16 @@ class ProductSeeder extends Seeder
                 'selling_price' => 2.99,
                 'current_stock' => 60,
                 'minimum_stock' => 20,
+                'category_id' => $pastryCategory->id, // Fats & Oils
             ],
         ];
 
         foreach ($products as $product) {
-            Product::create($product);
+            try {
+                Product::create($product);
+            } catch (\Exception $e) {
+                $this->command->error('Error creating product ' . ($product['name'] ?? 'unknown') . ': ' . $e->getMessage());
+            }
         }
     }
 }

@@ -9,10 +9,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Product extends Model
 {
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
         'name',
         'sku',
         'description',
+        'category_id',
         'recipe_id',
         'cost_price',
         'selling_price',
@@ -21,6 +27,11 @@ class Product extends Model
         'is_active',
     ];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
     protected $casts = [
         'cost_price' => 'decimal:2',
         'selling_price' => 'decimal:2',
@@ -29,18 +40,50 @@ class Product extends Model
         'is_active' => 'boolean',
     ];
 
+    /**
+     * Get the category that owns the product.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Get the recipe associated with the product.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function recipe(): BelongsTo
     {
         return $this->belongsTo(Recipe::class);
     }
-
+    
+    /**
+     * Get the stock movements for the product.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function stockMovements(): HasMany
     {
         return $this->hasMany(ProductStockMovement::class);
     }
+    
+    /**
+     * Get the sales items for the product.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function saleItems(): HasMany
+    {
+        return $this->hasMany(SaleItem::class);
+    }
 
     /**
      * The sales that belong to the product.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function sales(): BelongsToMany
     {

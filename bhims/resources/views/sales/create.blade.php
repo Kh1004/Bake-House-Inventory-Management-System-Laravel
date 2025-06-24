@@ -284,6 +284,78 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize totals
     updateTotals();
+
+    // Handle form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validate that at least one product is added
+        const productRows = document.querySelectorAll('.product-row');
+        let hasValidProducts = false;
+        const items = [];
+        
+        // First, remove any existing items data to prevent duplicates
+        document.querySelectorAll('input[name^="items["]').forEach(el => el.remove());
+        
+        // Collect all valid items
+        productRows.forEach((row, index) => {
+            const productSelect = row.querySelector('.product-select');
+            const quantityInput = row.querySelector('.quantity-input');
+            
+            if (productSelect && productSelect.value && quantityInput && quantityInput.value) {
+                hasValidProducts = true;
+                
+                // Create hidden inputs for each item
+                const productIdInput = document.createElement('input');
+                productIdInput.type = 'hidden';
+                productIdInput.name = `items[${index}][product_id]`;
+                productIdInput.value = productSelect.value;
+                form.appendChild(productIdInput);
+                
+                const quantityInputField = document.createElement('input');
+                quantityInputField.type = 'hidden';
+                quantityInputField.name = `items[${index}][quantity]`;
+                quantityInputField.value = parseFloat(quantityInput.value);
+                form.appendChild(quantityInputField);
+            }
+        });
+        
+        if (!hasValidProducts) {
+            alert('Please add at least one product to the sale');
+            return false;
+        }
+        
+        // Submit the form with the proper content type
+        const formData = new FormData(form);
+        
+        // Add CSRF token
+        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: new URLSearchParams(formData).toString()
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw err; });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.redirect) {
+                window.location.href = data.redirect;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error processing sale: ' + (error.message || 'Unknown error occurred'));
+        });
+    });
 });
 </script>
 @endpush
