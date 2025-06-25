@@ -83,7 +83,7 @@ class IngredientController extends Controller
             ]);
         }
 
-        return view('ingredients.index', compact('ingredients', 'categories', 'isLowStockPage'));
+        return view('ingredients.low-stock', compact('ingredients', 'categories'));
     }
 
     /**

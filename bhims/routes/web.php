@@ -18,16 +18,42 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// Dashboard Route
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+// Test route
+Route::get('/test-low-stock', function() {
+    return 'Test route works!';
+});
+
+// Test low-stock route (temporarily outside auth)
+Route::get('ingredients/low-stock', [IngredientController::class, 'lowStock'])
+    ->name('ingredients.low-stock.test');
+
+// Dashboard Routes
+Route::prefix('dashboard')->name('dashboard.')->middleware(['auth', 'verified'])->group(function () {
+    Route::get('/', [\App\Http\Controllers\DashboardController::class, 'overview'])->name('overview');
+    Route::get('/quick-actions', [\App\Http\Controllers\DashboardController::class, 'quickActions'])->name('quick-actions');
+    Route::get('/recent-activities', [\App\Http\Controllers\DashboardController::class, 'recentActivities'])->name('recent-activities');
+});
+
+// Legacy dashboard route for backward compatibility
+Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'overview'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 // Authentication Routes
 require __DIR__.'/auth.php';
 
+// Test routes (remove in production)
+if (app()->environment('local')) {
+    require __DIR__.'/test-activity.php';
+}
+
 // Authenticated Routes
 Route::middleware(['auth'])->group(function () {
+    // Test authenticated route
+    Route::get('/test-authenticated', function() {
+        return 'Authenticated test route works!';
+    });
+
     // Profile Routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

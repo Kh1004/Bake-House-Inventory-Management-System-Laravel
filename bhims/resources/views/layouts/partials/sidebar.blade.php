@@ -27,14 +27,34 @@
         @endphp
 
         <!-- Dashboard -->
-        <a href="{{ route('dashboard') }}" 
-           class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('dashboard') }} transition-colors duration-200">
-            <svg class="mr-3 h-6 w-6 flex-shrink-0 {{ $currentRoute === 'dashboard' ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }}" 
-                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-            </svg>
-            {{ __('Dashboard') }}
-        </a>
+        <div x-data="{ open: {{ in_array($currentRoute, ['dashboard', 'dashboard.quick-actions', 'dashboard.recent-activities']) ? 'true' : 'false' }} }">
+            <button @click="open = !open" 
+                    class="group w-full flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive(['dashboard', 'dashboard.quick-actions', 'dashboard.recent-activities']) }} transition-colors duration-200">
+                <svg class="mr-3 h-6 w-6 flex-shrink-0 {{ in_array($currentRoute, ['dashboard', 'dashboard.quick-actions', 'dashboard.recent-activities']) ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }}" 
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                {{ __('Dashboard') }}
+                <svg :class="{'rotate-90': open}" class="ml-auto h-5 w-5 transform transition-transform duration-200 text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300" 
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+            <div x-show="open" class="mt-1 space-y-1 pl-12">
+                <a href="{{ route('dashboard') }}" 
+                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('dashboard') }} transition-colors duration-200">
+                    {{ __('Overview') }}
+                </a>
+                <a href="{{ route('dashboard.quick-actions') }}" 
+                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('dashboard.quick-actions') }} transition-colors duration-200">
+                    {{ __('Quick Actions') }}
+                </a>
+                <a href="{{ route('dashboard.recent-activities') }}" 
+                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('dashboard.recent-activities') }} transition-colors duration-200">
+                    {{ __('Recent Activities') }}
+                </a>
+            </div>
+        </div>
 
         <!-- Ingredients -->
         <div x-data="{ open: {{ in_array($currentRoute, ['ingredients.index', 'ingredients.create', 'ingredients.edit', 'ingredients.low-stock']) ? 'true' : 'false' }} }">
