@@ -26,7 +26,7 @@ class User extends Authenticatable
         'email',
         'password',
         'phone',
-        'role_id',
+        'role',
         'is_active',
     ];
 
@@ -52,11 +52,75 @@ class User extends Authenticatable
     ];
 
     /**
+     * The roles that are allowed in the application.
+     *
+     * @var array
+     */
+    public const ROLES = [
+        'admin' => 'Administrator',
+        'manager' => 'Manager',
+        'staff' => 'Staff',
+    ];
+
+    /**
+     * The default role for new users.
+     *
+     * @var string
+     */
+    public const DEFAULT_ROLE = 'staff';
+
+    /**
      * Get the role that owns the user.
      */
-    public function role()
+    /**
+     * Check if user has a specific role.
+     *
+     * @param string $role
+     * @return bool
+     */
+    public function hasRole($role)
     {
-        return $this->belongsTo(Role::class);
+        return $this->role === $role;
+    }
+
+    /**
+     * Check if user has admin role.
+     *
+     * @return bool
+     */
+    public function isAdmin()
+    {
+        return $this->hasRole('admin');
+    }
+
+    /**
+     * Check if user has manager role.
+     *
+     * @return bool
+     */
+    public function isManager()
+    {
+        return $this->hasRole('manager');
+    }
+
+    /**
+     * Check if user has staff role.
+     *
+     * @return bool
+     */
+    public function isStaff()
+    {
+        return $this->hasRole('staff');
+    }
+
+    /**
+     * Get the user's role name.
+     *
+     * @return string
+     */
+    public function getRoleNameAttribute()
+    {
+        return self::ROLES[$this->role] ?? 'Unknown';
     }
 
     /**

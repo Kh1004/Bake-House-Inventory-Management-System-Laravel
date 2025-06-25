@@ -86,6 +86,36 @@
             </div>
         </div>
 
+        <!-- User Management -->
+        @can('viewAny', App\Models\User::class)
+        <div x-data="{ open: {{ in_array($currentRoute, ['users.index', 'users.create', 'users.edit']) ? 'true' : 'false' }} }">
+            <button @click="open = !open" 
+                    class="group w-full flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive(['users.index', 'users.create', 'users.edit']) }} transition-colors duration-200">
+                <svg class="mr-3 h-6 w-6 flex-shrink-0 {{ in_array($currentRoute, ['users.index', 'users.create', 'users.edit']) ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }}" 
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0111.5-3M13 7a4 4 0 11-8 0 4 4 0 018 0zm6 12h.01M16 16h.01" />
+                </svg>
+                {{ __('Users') }}
+                <svg :class="{'rotate-90': open}" class="ml-auto h-5 w-5 transform transition-transform duration-200 text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300" 
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+            <div x-show="open" class="mt-1 space-y-1 pl-12">
+                <a href="{{ route('users.index') }}" 
+                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('users.index') }} transition-colors duration-200">
+                    {{ __('All Users') }}
+                </a>
+                @can('create', App\Models\User::class)
+                <a href="{{ route('users.create') }}" 
+                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('users.create') }} transition-colors duration-200">
+                    {{ __('Add New') }}
+                </a>
+                @endcan
+            </div>
+        </div>
+        @endcan
+
         <!-- Categories -->
         <div x-data="{ open: {{ in_array($currentRoute, ['categories.index', 'categories.create', 'categories.edit']) ? 'true' : 'false' }} }">
             <button @click="open = !open" 

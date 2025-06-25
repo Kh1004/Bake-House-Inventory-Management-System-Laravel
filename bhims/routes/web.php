@@ -54,6 +54,9 @@ Route::middleware(['auth'])->group(function () {
         return 'Authenticated test route works!';
     });
 
+    // User Management Routes
+    Route::resource('users', \App\Http\Controllers\UserController::class)->except(['show']);
+    
     // Profile Routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
