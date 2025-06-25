@@ -118,6 +118,32 @@
             </div>
         </div>
 
+        <!-- Recipes -->
+        <div x-data="{ open: {{ in_array($currentRoute, ['recipes.index', 'recipes.create', 'recipes.edit', 'recipes.show']) ? 'true' : 'false' }} }">
+            <button @click="open = !open" 
+                    class="group w-full flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive(['recipes.index', 'recipes.create', 'recipes.edit', 'recipes.show']) }} transition-colors duration-200">
+                <svg class="mr-3 h-6 w-6 flex-shrink-0 {{ in_array($currentRoute, ['recipes.index', 'recipes.create', 'recipes.edit', 'recipes.show']) ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }}" 
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                {{ __('Recipes') }}
+                <svg :class="{'rotate-90': open}" class="ml-auto h-5 w-5 transform transition-transform duration-200 text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300" 
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+            <div x-show="open" class="mt-1 space-y-1 pl-12">
+                <a href="{{ route('recipes.index') }}" 
+                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('recipes.index') }} transition-colors duration-200">
+                    {{ __('All Recipes') }}
+                </a>
+                <a href="{{ route('recipes.create') }}" 
+                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('recipes.create') }} transition-colors duration-200">
+                    {{ __('Add New') }}
+                </a>
+            </div>
+        </div>
+
         <!-- Suppliers -->
         <div x-data="{ 
             isOpen: {{ in_array($currentRoute, ['suppliers.index', 'suppliers.create', 'suppliers.edit', 'suppliers.show']) ? 'true' : 'false' }},

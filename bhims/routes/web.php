@@ -61,6 +61,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/sales', [\App\Http\Controllers\ReportController::class, 'sales'])->name('reports.sales');
         Route::get('/inventory', [\App\Http\Controllers\ReportController::class, 'inventory'])->name('reports.inventory');
     });
+    
+    // Recipes Routes
+    Route::resource('recipes', \App\Http\Controllers\RecipeController::class);
+    Route::put('recipes/{recipe}/toggle-status', [\App\Http\Controllers\RecipeController::class, 'toggleStatus'])
+        ->name('recipes.toggle-status');
 });
 
 // Debug Route (remove in production)

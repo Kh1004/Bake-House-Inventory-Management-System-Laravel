@@ -187,6 +187,9 @@
     <!-- Alpine.js & Plugins -->
     <script defer src="https://unpkg.com/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://unpkg.com/@alpinejs/transition@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Currency Script -->
+    <script src="{{ asset('js/currency.js') }}" defer></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
     <!-- Flowbite JS -->

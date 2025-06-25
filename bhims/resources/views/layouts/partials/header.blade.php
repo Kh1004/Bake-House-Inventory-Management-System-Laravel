@@ -28,8 +28,24 @@
             </div>
 
             <div class="flex items-center">
+                <!-- Currency Selection -->
+                <div class="ml-4 relative" x-data="{ open: false, selectedCurrency: 'LKR' }">
+                    <button @click="open = !open" class="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none">
+                        <span x-text="selectedCurrency" class="mr-1"></span>
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    <div x-show="open" @click.away="open = false" class="origin-top-right absolute right-0 mt-2 w-24 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none z-50" style="display: none;">
+                        <div class="py-1">
+                            <button @click="selectedCurrency = 'LKR'; open = false; $dispatch('currency-changed', { currency: 'LKR' });" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">LKR</button>
+                            <button @click="selectedCurrency = 'USD'; open = false; $dispatch('currency-changed', { currency: 'USD' });" class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">USD</button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Theme Toggle -->
-                <button @click="$store.theme.toggle()" class="p-2 rounded-full text-gray-500 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <button @click="$store.theme.toggle()" class="ml-4 p-2 rounded-full text-gray-500 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     <span class="sr-only">Toggle dark mode</span>
                     <svg x-show="!$store.theme.dark" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
