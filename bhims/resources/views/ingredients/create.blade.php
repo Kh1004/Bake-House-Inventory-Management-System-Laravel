@@ -55,7 +55,7 @@
 @endpush
 
 <div class="py-6">
-    <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         @if(session('error'))
             <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
                 <p class="font-bold">Error</p>
@@ -93,12 +93,12 @@
                     @csrf
                     <input type="hidden" name="_token" value="{{ csrf_token() }}" id="csrf-token">
 
-                    <div class="bg-gray-50 p-6 rounded-lg">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+                    <div class="bg-white p-6 rounded-lg border border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900 mb-6 pb-2 border-b border-gray-100">Basic Information</h3>
                         
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Category -->
-                            <div>
+                            <div class="md:col-span-2">
                                 <label for="category_id" class="block text-sm font-medium text-gray-700">Category</label>
                                 <select id="category_id" name="category_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md @error('category_id') border-red-300 @enderror">
                                     <option value="">Select a category</option>
@@ -138,8 +138,24 @@
                                 @enderror
                             </div>
 
-                            <!-- Unit of Measure -->
+                            <!-- Supplier -->
                             <div>
+                                <label for="supplier_id" class="block text-sm font-medium text-gray-700">Supplier</label>
+                                <select id="supplier_id" name="supplier_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md @error('supplier_id') border-red-300 @enderror">
+                                    <option value="">Select a supplier</option>
+                                    @foreach($suppliers as $supplier)
+                                        <option value="{{ $supplier->id }}" {{ old('supplier_id') == $supplier->id ? 'selected' : '' }}>
+                                            {{ $supplier->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('supplier_id')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            <!-- Unit of Measure -->
+                            <div class="md:col-span-2">
                                 <label for="unit_of_measure" class="block text-sm font-medium text-gray-700">Unit of Measure *</label>
                                 <input type="text" name="unit_of_measure" id="unit_of_measure" value="{{ old('unit_of_measure', 'g') }}" required
                                     class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm @error('unit_of_measure') border-red-300 text-red-900 @enderror"
@@ -178,8 +194,8 @@
                         </div>
                     </div>
 
-                    <div class="bg-gray-50 p-6 rounded-lg">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Stock & Pricing</h3>
+                    <div class="bg-white p-6 rounded-lg border border-gray-200 mt-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-6 pb-2 border-b border-gray-100">Stock & Pricing</h3>
                         
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <!-- Current Stock -->
@@ -218,19 +234,19 @@
 
                             <!-- Unit Price -->
                             <div>
-                                <label for="unit_price" class="block text-sm font-medium text-gray-700">Unit Price ({{ config('app.currency', '$') }}) *</label>
+                                <label for="unit_price" class="block text-sm font-medium text-gray-700">Unit Price *</label>
                                 <div class="mt-1 relative rounded-md shadow-sm">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span class="text-gray-500 sm:text-sm">{{ config('app.currency_symbol', '$') }}</span>
+                                        <span class="text-gray-500 sm:text-sm">Rs.</span>
                                     </div>
                                     <input type="number" name="unit_price" id="unit_price" 
                                         value="{{ old('unit_price', 0) }}" step="0.01" min="0" required
-                                        class="block w-full pl-7 pr-12 sm:text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 @error('unit_price') border-red-300 text-red-900 @enderror">
+                                        class="block w-full pl-10 pr-12 sm:text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 @error('unit_price') border-red-300 text-red-900 @enderror">
                                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                                         <span class="text-gray-500 sm:text-sm" id="unit_price_unit">/g</span>
                                     </div>
                                 </div>
-                                <p class="mt-1 text-xs text-gray-500">Cost per unit</p>
+                                <p class="mt-1 text-xs text-gray-500">Cost per unit (LKR)</p>
                                 @error('unit_price')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
@@ -239,7 +255,7 @@
                     </div>
 
                     <!-- Form Actions -->
-                    <div class="flex justify-end space-x-3 pt-6">
+                    <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 mt-8">
                         <a href="{{ route('ingredients.index') }}" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                             Cancel
                         </a>

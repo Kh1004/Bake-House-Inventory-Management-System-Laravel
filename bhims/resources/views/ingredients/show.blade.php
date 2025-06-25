@@ -75,12 +75,42 @@
                     </div>
                 </div>
 
-                @if($ingredient->category)
-                <div class="mt-4">
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Category</p>
-                    <p class="text-gray-900 dark:text-white">{{ $ingredient->category->name }}</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    @if($ingredient->category)
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Category</p>
+                        <p class="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
+                            {{ $ingredient->category->name }}
+                        </p>
+                    </div>
+                    @endif
+                    
+                    <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Supplier</p>
+                        @if($ingredient->supplier)
+                            <div class="mt-1">
+                                <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                                    {{ $ingredient->supplier->name }}
+                                </p>
+                                @if($ingredient->supplier->contact_person || $ingredient->supplier->phone)
+                                <div class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                                    @if($ingredient->supplier->contact_person)
+                                        <p>Contact: {{ $ingredient->supplier->contact_person }}</p>
+                                    @endif
+                                    @if($ingredient->supplier->phone)
+                                        <p>Phone: {{ $ingredient->supplier->phone }}</p>
+                                    @endif
+                                    @if($ingredient->supplier->email)
+                                        <p>Email: <a href="mailto:{{ $ingredient->supplier->email }}" class="text-blue-600 dark:text-blue-400 hover:underline">{{ $ingredient->supplier->email }}</a></p>
+                                    @endif
+                                </div>
+                                @endif
+                            </div>
+                        @else
+                            <p class="mt-1 text-gray-500 dark:text-gray-400">No supplier assigned</p>
+                        @endif
+                    </div>
                 </div>
-                @endif
             </div>
         </div>
 

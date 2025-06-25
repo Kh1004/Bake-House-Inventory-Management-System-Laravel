@@ -13,6 +13,7 @@ class Ingredient extends Model
         'name',
         'description',
         'category_id',
+        'supplier_id',
         'unit_of_measure',
         'current_stock',
         'minimum_stock',
@@ -45,5 +46,13 @@ class Ingredient extends Model
     public function stockMovements(): HasMany
     {
         return $this->hasMany(StockMovement::class);
+    }
+
+    /**
+     * Get the supplier that provides this ingredient.
+     */
+    public function supplier()
+    {
+        return $this->belongsTo(Supplier::class);
     }
 }

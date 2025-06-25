@@ -4,6 +4,7 @@
             <tr>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Price</th>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -32,11 +33,22 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
+                        @if($ingredient->supplier)
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                {{ $ingredient->supplier->name }}
+                            </span>
+                        @else
+                            <span class="px-2 inline-flex text-xs leading-5 text-gray-500">
+                                Not set
+                            </span>
+                        @endif
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-gray-900">{{ number_format($ingredient->current_stock, 2) }}</div>
                         <div class="text-sm text-gray-500">Min: {{ number_format($ingredient->minimum_stock, 2) }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {{ config('settings.currency_symbol') }}{{ number_format($ingredient->unit_price, 2) }}
+                        Rs. {{ number_format($ingredient->unit_price, 2) }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         @if($ingredient->current_stock <= 0)

@@ -16,7 +16,7 @@ class IngredientController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Ingredient::with('category');
+        $query = Ingredient::with(['category', 'supplier']);
 
         // Search filter
         if ($request->has('search') && !empty($request->search)) {
@@ -92,11 +92,19 @@ class IngredientController extends Controller
     public function create()
     {
         $categories = \App\Models\Category::all();
+        $suppliers = \App\Models\Supplier::where('is_active', true)->orderBy('name')->get();
+        
         if ($categories->isEmpty()) {
             return redirect()->route('categories.create')
                 ->with('warning', 'Please create at least one category before adding ingredients.');
         }
-        return view('ingredients.create', compact('categories'));
+        
+        if ($suppliers->isEmpty()) {
+            return redirect()->route('suppliers.create')
+                ->with('warning', 'Please create at least one supplier before adding ingredients.');
+        }
+        
+        return view('ingredients.create', compact('categories', 'suppliers'));
     }
 
     /**
@@ -113,6 +121,7 @@ class IngredientController extends Controller
                 'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
                 'category_id' => 'required|exists:categories,id',
+                'supplier_id' => 'nullable|exists:suppliers,id',
                 'unit_of_measure' => 'required|string|max:50',
                 'current_stock' => 'required|numeric|min:0',
                 'minimum_stock' => 'required|numeric|min:0',
@@ -129,6 +138,7 @@ class IngredientController extends Controller
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? null,
                 'category_id' => $validated['category_id'],
+                'supplier_id' => $validated['supplier_id'] ?? null,
                 'unit_of_measure' => $validated['unit_of_measure'],
                 'current_stock' => $validated['current_stock'],
                 'minimum_stock' => $validated['minimum_stock'],
@@ -211,6 +221,7 @@ class IngredientController extends Controller
      */
     public function show(Ingredient $ingredient)
     {
+        $ingredient->load(['supplier', 'category']);
         $stockMovements = $ingredient->stockMovements()
             ->with('user')
             ->latest()
@@ -225,7 +236,19 @@ class IngredientController extends Controller
     public function edit(Ingredient $ingredient)
     {
         $categories = Category::all();
-        return view('ingredients.edit', compact('ingredient', 'categories'));
+        $suppliers = \App\Models\Supplier::where('is_active', true)->orderBy('name')->get();
+        
+        if ($categories->isEmpty()) {
+            return redirect()->route('categories.create')
+                ->with('warning', 'Please create at least one category before editing ingredients.');
+        }
+        
+        if ($suppliers->isEmpty()) {
+            return redirect()->route('suppliers.create')
+                ->with('warning', 'Please create at least one supplier before editing ingredients.');
+        }
+        
+        return view('ingredients.edit', compact('ingredient', 'categories', 'suppliers'));
     }
 
     /**
@@ -237,6 +260,7 @@ class IngredientController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
+            'supplier_id' => 'nullable|exists:suppliers,id',
             'unit_of_measure' => 'required|string|max:50',
             'minimum_stock' => 'required|numeric|min:0',
             'unit_price' => 'required|numeric|min:0',
