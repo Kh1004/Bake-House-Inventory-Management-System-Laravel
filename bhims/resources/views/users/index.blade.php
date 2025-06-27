@@ -26,6 +26,50 @@
                     </div>
                 @endif
 
+                <!-- Filter Form -->
+                <div class="mb-6 bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                    <form method="GET" action="{{ route('users.index') }}" class="space-y-4 sm:space-y-0 sm:flex sm:space-x-4">
+                        <!-- Search Input -->
+                        <div class="flex-1">
+                            <label for="search" class="sr-only">Search</label>
+                            <input type="text" name="search" id="search" value="{{ $filters['search'] }}" 
+                                   class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200" 
+                                   placeholder="Search by name, email, or phone">
+                        </div>
+                        
+                        <!-- Role Select -->
+                        <div class="w-40">
+                            <label for="role" class="sr-only">Role</label>
+                            <select id="role" name="role" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200">
+                                <option value="">All Roles</option>
+                                @foreach($roles as $key => $role)
+                                    <option value="{{ $key }}" {{ $filters['role'] === $key ? 'selected' : '' }}>{{ $role }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        
+                        <!-- Status Select -->
+                        <div class="w-32">
+                            <label for="status" class="sr-only">Status</label>
+                            <select id="status" name="status" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200">
+                                <option value="">All Statuses</option>
+                                <option value="1" {{ $filters['status'] === 1 ? 'selected' : '' }}>Active</option>
+                                <option value="0" {{ $filters['status'] === 0 ? 'selected' : '' }}>Inactive</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Buttons -->
+                        <div class="flex space-x-2">
+                            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Filter
+                            </button>
+                            <a href="{{ route('users.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md shadow-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Reset
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-gray-700">

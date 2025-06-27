@@ -68,6 +68,20 @@ class User extends Authenticatable
      * @var string
      */
     public const DEFAULT_ROLE = 'staff';
+    
+    /**
+     * The attributes that should be appended to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['role_name'];
+    
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $with = [];
 
     /**
      * Get the role that owns the user.

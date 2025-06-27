@@ -4,6 +4,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\LowStockIngredientController;
+use App\Http\Controllers\Api\DemandPredictionController as ApiDemandPredictionController;
+use App\Http\Controllers\DemandPredictionController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 
@@ -47,6 +49,13 @@ if (app()->environment('local')) {
     require __DIR__.'/test-activity.php';
 }
 
+// User Management Routes
+Route::middleware(['auth'])->group(function () {
+    Route::resource('users', \App\Http\Controllers\UserController::class)->except(['show']);
+    Route::put('users/{user}/change-password', [\App\Http\Controllers\UserController::class, 'changePassword'])->name('users.change-password');
+    Route::put('users/{user}/toggle-status', [\App\Http\Controllers\UserController::class, 'toggleStatus'])->name('users.toggle-status');
+});
+
 // Authenticated Routes
 Route::middleware(['auth'])->group(function () {
     // Test authenticated route
@@ -60,6 +69,8 @@ Route::middleware(['auth'])->group(function () {
     // Profile Routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('/profile/change-password', [ProfileController::class, 'showChangePasswordForm'])->name('profile.password');
+    Route::post('/profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.password.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Ingredients Routes
@@ -81,6 +92,8 @@ Route::middleware(['auth'])->group(function () {
     
     // Sales Routes
     Route::resource('sales', \App\Http\Controllers\SaleController::class);
+    Route::get('sales/{sale}/print', [\App\Http\Controllers\SaleController::class, 'print'])->name('sales.print');
+    Route::post('sales/{sale}/send-receipt', [\App\Http\Controllers\SaleController::class, 'sendReceipt'])->name('sales.email');
     
     // Customers Routes
     Route::resource('customers', \App\Http\Controllers\CustomerController::class);
@@ -97,7 +110,30 @@ Route::middleware(['auth'])->group(function () {
         ->name('recipes.toggle-status');
 });
 
-// Debug Route (remove in production)
+// Demand Prediction Routes
+Route::middleware(['auth'])->prefix('demand-prediction')->group(function () {
+    Route::get('/', [DemandPredictionController::class, 'index'])->name('demand-prediction.index');
+    
+    // API Routes
+    Route::prefix('api')->group(function () {
+        // Prediction endpoints
+        Route::get('/predict-demand/{productId}', [ApiDemandPredictionController::class, 'getProductPrediction'])
+            ->name('api.predict.demand');
+            
+        // Feedback endpoints
+        Route::middleware('auth')->group(function () {
+            Route::post('/feedback', [\App\Http\Controllers\Api\PredictionFeedbackController::class, 'store'])
+                ->name('api.feedback.store');
+            Route::get('/feedback/product/{productId}', [\App\Http\Controllers\Api\PredictionFeedbackController::class, 'getProductFeedback'])
+                ->name('api.feedback.product');
+            Route::get('/feedback/accuracy-stats', [\App\Http\Controllers\Api\PredictionFeedbackController::class, 'getAccuracyStats'])
+                ->name('api.feedback.stats');
+            Route::get('/feedback/accuracy-stats/{productId}', [\App\Http\Controllers\Api\PredictionFeedbackController::class, 'getAccuracyStats'])
+                ->name('api.feedback.stats.product');
+        });
+    });
+});
+
 Route::get('/debug/ingredients-table', function () {
     try {
         $columns = DB::select('DESCRIBE ingredients');

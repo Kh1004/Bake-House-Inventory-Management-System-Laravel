@@ -56,6 +56,16 @@
             </div>
         </div>
 
+        <!-- Demand Prediction -->
+        <a href="{{ route('demand-prediction.index') }}" 
+           class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('demand-prediction.index') }} transition-colors duration-200">
+            <svg class="mr-3 h-6 w-6 flex-shrink-0 {{ $currentRoute === 'demand-prediction.index' ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }}" 
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            {{ __('Demand Prediction') }}
+        </a>
+
         <!-- Ingredients -->
         <div x-data="{ open: {{ in_array($currentRoute, ['ingredients.index', 'ingredients.create', 'ingredients.edit', 'ingredients.low-stock']) ? 'true' : 'false' }} }">
             <button @click="open = !open" 
@@ -320,17 +330,19 @@
         <div class="flex items-center justify-between">
             <div class="flex items-center">
                 <div class="h-10 w-10 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-700 dark:text-indigo-200 font-medium">
-                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                    {{ Auth::check() ? strtoupper(substr(Auth::user()->name, 0, 1)) : 'U' }}
                 </div>
                 <div class="ml-3">
                     <p class="text-sm font-medium text-gray-700 dark:text-gray-200">
-                        {{ Auth::user()->name }}
+                        {{ Auth::check() ? Auth::user()->name : 'Guest User' }}
                     </p>
+                    @auth
                     <div class="flex space-x-2">
                         <a href="{{ route('profile.edit') }}" class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300">
                             {{ __('View Profile') }}
                         </a>
                     </div>
+                    @endauth
                 </div>
             </div>
             <form method="POST" action="{{ route('logout') }}" class="ml-2">

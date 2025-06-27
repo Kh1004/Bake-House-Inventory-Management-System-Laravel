@@ -13,13 +13,46 @@ class UserController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
+        $this->authorizeResource(User::class, 'user');
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('viewAny', User::class);
-        $users = User::latest()->paginate(10);
-        return view('users.index', compact('users'));
+        
+        $query = User::query();
+        
+        // Search filter
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
+            });
+        }
+        
+        // Role filter
+        if ($request->has('role') && !empty($request->role)) {
+            $query->where('role', $request->role);
+        }
+        
+        // Status filter
+        if ($request->has('status') && $request->status !== null) {
+            $query->where('is_active', $request->status);
+        }
+        
+        $users = $query->latest()->paginate(10)->withQueryString();
+        
+        return view('users.index', [
+            'users' => $users,
+            'roles' => User::ROLES,
+            'filters' => [
+                'search' => $request->search ?? '',
+                'role' => $request->role ?? '',
+                'status' => $request->status !== null ? (int)$request->status : null,
+            ]
+        ]);
     }
 
     public function create()

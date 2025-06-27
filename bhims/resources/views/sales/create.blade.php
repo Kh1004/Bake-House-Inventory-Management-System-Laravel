@@ -36,6 +36,21 @@
                     </select>
                 </div>
 
+                <!-- Payment Method (shown conditionally) -->
+                <div id="payment_method_container" class="hidden">
+                    <label for="payment_method" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Payment Method <span class="text-red-500">*</span>
+                    </label>
+                    <select name="payment_method" id="payment_method"
+                            class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                        <option value="">Select payment method</option>
+                        <option value="cash">Cash</option>
+                        <option value="card">Credit/Debit Card</option>
+                        <option value="bank_transfer">Bank Transfer</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
                 <!-- Notes -->
                 <div>
                     <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -142,11 +157,66 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Toggle payment method field based on payment status
+    const paymentStatus = document.getElementById('payment_status');
+    const paymentMethodContainer = document.getElementById('payment_method_container');
+    const paymentMethodSelect = document.getElementById('payment_method');
+    
+    function updatePaymentMethodVisibility() {
+        if (paymentStatus.value === 'paid' || paymentStatus.value === 'partial') {
+            paymentMethodContainer.classList.remove('hidden');
+            paymentMethodSelect.required = true;
+        } else {
+            paymentMethodContainer.classList.add('hidden');
+            paymentMethodSelect.required = false;
+            paymentMethodSelect.value = '';
+        }
+    }
+    
+    paymentStatus.addEventListener('change', updatePaymentMethodVisibility);
+    updatePaymentMethodVisibility();
+    
     let productIndex = 0;
     const productRows = document.getElementById('productRows');
     const productRowTemplate = document.getElementById('productRowTemplate');
     const addProductBtn = document.getElementById('addProduct');
     const form = document.getElementById('saleForm');
+
+    // Function to initialize a product row
+    function initProductRow(row) {
+        const select = row.querySelector('.product-select');
+        const quantityInput = row.querySelector('.quantity-input');
+        
+        // Set default quantity to 1 if empty
+        if (quantityInput && !quantityInput.value) {
+            quantityInput.value = '1';
+        }
+        
+        // Add event listener for product selection
+        if (select) {
+            select.addEventListener('change', function() {
+                updatePriceInput(this);
+                updateRowTotal(this.closest('.product-row'));
+                updateTotals();
+            });
+        }
+        
+        // Add event listener for quantity changes
+        if (quantityInput) {
+            quantityInput.addEventListener('input', function() {
+                updateRowTotal(this.closest('.product-row'));
+                updateTotals();
+            });
+        }
+        
+        // Update price and totals if product is already selected
+        if (select && select.value) {
+            updatePriceInput(select);
+            updateRowTotal(row);
+        }
+        
+        updateTotals();
+    }
 
     // Add first product row by default
     addProductRow();
@@ -185,34 +255,11 @@ document.addEventListener('DOMContentLoaded', function() {
         newRow.innerHTML = productRowTemplate.innerHTML.replace(/__INDEX__/g, currentIndex);
         productRows.appendChild(newRow);
         
-        // Initialize the price input
-        const select = newRow.querySelector('.product-select');
-        if (select) {
-            updatePriceInput(select);
-        }
+        // Get the actual row that was added (since innerHTML doesn't return the elements)
+        const addedRow = productRows.lastElementChild;
         
-        // Add event listener for product selection
-        select.addEventListener('change', function() {
-            updatePriceInput(this);
-            updateRowTotal(this.closest('.product-row'));
-            updateTotals();
-        });
-        
-        // Add event listener for quantity changes
-        const quantityInput = newRow.querySelector('.quantity-input');
-        if (quantityInput) {
-            quantityInput.addEventListener('input', function() {
-                updateRowTotal(this.closest('.product-row'));
-                updateTotals();
-            });
-        }
-        
-        // Trigger change to update totals
-        if (select && select.value) {
-            updatePriceInput(select);
-            updateRowTotal(newRow);
-            updateTotals();
-        }
+        // Initialize the row
+        initProductRow(addedRow);
     }
 
     // Update the price input when a product is selected
@@ -285,75 +332,199 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize totals
     updateTotals();
 
+    // Function to prepare form data before submission
+    function prepareFormData() {
+        const productSelects = document.querySelectorAll('.product-select');
+        const quantityInputs = document.querySelectorAll('.quantity-input');
+        let hasValidProducts = false;
+        
+        // Clear any existing hidden inputs
+        document.querySelectorAll('input[name^="items["]').forEach(el => el.remove());
+        
+        // Process each product row
+        productSelects.forEach((select, index) => {
+            try {
+                const quantityInput = quantityInputs[index];
+                
+                // Skip if either element is not found
+                if (!select || !quantityInput) {
+                    console.warn('Mismatched product select and quantity inputs');
+                    return;
+                }
+                
+                // Skip if no product is selected
+                if (!select.value) {
+                    console.log('Skipping row - no product selected');
+                    return;
+                }
+                
+                // Ensure quantity is a valid number and at least 0.01
+                const quantity = parseFloat(quantityInput.value || '0');
+                
+                if (isNaN(quantity) || quantity <= 0) {
+                    console.log('Invalid quantity for product', select.value, ':', quantityInput.value);
+                    return;
+                }
+                
+                // If we get here, we have a valid product and quantity
+                hasValidProducts = true;
+                
+                // Create hidden inputs for the form submission
+                const productIdInput = document.createElement('input');
+                productIdInput.type = 'hidden';
+                productIdInput.name = `items[${index}][product_id]`;
+                productIdInput.value = select.value;
+                form.appendChild(productIdInput);
+                
+                const quantityHiddenInput = document.createElement('input');
+                quantityHiddenInput.type = 'hidden';
+                quantityHiddenInput.name = `items[${index}][quantity]`;
+                quantityHiddenInput.value = quantity.toString();
+                form.appendChild(quantityHiddenInput);
+                
+                console.log('Added item:', {
+                    index: index,
+                    product_id: select.value,
+                    quantity: quantity
+                });
+                
+            } catch (error) {
+                console.error('Error processing product row:', error, select);
+            }
+        });
+        
+        console.log('Form validation result:', hasValidProducts);
+        return hasValidProducts;
+    }
+
     // Handle form submission
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Validate that at least one product is added
-        const productRows = document.querySelectorAll('.product-row');
-        let hasValidProducts = false;
+        const submitButton = form.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.innerHTML = 'Processing...';
+        
+        // Prepare form data and validate
+        const formData = new FormData(form);
         const items = [];
+        let hasValidProducts = false;
         
-        // First, remove any existing items data to prevent duplicates
-        document.querySelectorAll('input[name^="items["]').forEach(el => el.remove());
-        
-        // Collect all valid items
-        productRows.forEach((row, index) => {
+        // Collect all product rows
+        document.querySelectorAll('.product-row').forEach((row, index) => {
             const productSelect = row.querySelector('.product-select');
             const quantityInput = row.querySelector('.quantity-input');
+            const priceInput = row.querySelector('.price-input');
+            const itemTotal = row.querySelector('.item-total');
             
-            if (productSelect && productSelect.value && quantityInput && quantityInput.value) {
-                hasValidProducts = true;
+            if (productSelect && productSelect.value && quantityInput && quantityInput.value && priceInput && priceInput.value) {
+                const quantity = parseFloat(quantityInput.value);
+                const unitPrice = parseFloat(priceInput.value) || 0;
+                const total = parseFloat(itemTotal.textContent.replace('LKR', '').trim()) || 0;
                 
-                // Create hidden inputs for each item
-                const productIdInput = document.createElement('input');
-                productIdInput.type = 'hidden';
-                productIdInput.name = `items[${index}][product_id]`;
-                productIdInput.value = productSelect.value;
-                form.appendChild(productIdInput);
-                
-                const quantityInputField = document.createElement('input');
-                quantityInputField.type = 'hidden';
-                quantityInputField.name = `items[${index}][quantity]`;
-                quantityInputField.value = parseFloat(quantityInput.value);
-                form.appendChild(quantityInputField);
+                if (!isNaN(quantity) && quantity > 0 && unitPrice > 0) {
+                    items.push({
+                        product_id: productSelect.value,
+                        quantity: quantity,
+                        unit_price: unitPrice,
+                        total: total
+                    });
+                    hasValidProducts = true;
+                }
             }
         });
         
         if (!hasValidProducts) {
-            alert('Please add at least one product to the sale');
+            alert('Please add at least one product with quantity greater than 0 to the sale');
+            submitButton.disabled = false;
+            submitButton.innerHTML = 'Create Sale';
             return false;
         }
         
-        // Submit the form with the proper content type
-        const formData = new FormData(form);
+        // Create a properly structured items array with all required fields
+        const formattedItems = items.map(item => ({
+            product_id: parseInt(item.product_id, 10),
+            quantity: parseFloat(item.quantity),
+            unit_price: parseFloat(item.unit_price),
+            total: parseFloat(item.total)
+        }));
         
-        // Add CSRF token
-        const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        // Create a proper form data object
+        const paymentStatus = formData.get('payment_status');
+        const paymentMethod = formData.get('payment_method');
         
+        // Get CSRF token from meta tag
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        
+        const jsonData = {
+            _token: csrfToken,
+            customer_id: formData.get('customer_id'),
+            payment_status: paymentStatus,
+            payment_method: paymentMethod,
+            notes: formData.get('notes'),
+            items: formattedItems
+        };
+        
+        // Remove payment_method if payment status is pending
+        if (paymentStatus === 'pending') {
+            delete jsonData.payment_method;
+        }
+        
+        console.log('Formatted items:', formattedItems);
+        
+        // Log the data being sent
+        console.log('Submitting form with data:', jsonData);
+        
+        // Submit using fetch to handle the form data properly
         fetch(form.action, {
             method: 'POST',
+            body: JSON.stringify(jsonData),
             headers: {
-                'X-CSRF-TOKEN': token,
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken,
                 'Accept': 'application/json',
-                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Type': 'application/json',
+                'X-XSRF-TOKEN': decodeURIComponent(document.cookie.replace(/(?:(?:^|.*;\s*)XSRF-TOKEN\s*\=\s*([^;]*).*$)|^.*$/, '$1'))
             },
-            body: new URLSearchParams(formData).toString()
+            credentials: 'same-origin'
         })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => { throw err; });
+        .then(async response => {
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return response.json().then(data => ({
+                    data: data,
+                    ok: response.ok,
+                    status: response.status
+                }));
+            } else {
+                const text = await response.text();
+                throw new Error(`Expected JSON, got ${contentType}`);
             }
-            return response.json();
         })
-        .then(data => {
+        .then(({data, ok, status}) => {
+            if (!ok) {
+                throw new Error(data.message || 'An error occurred');
+            }
             if (data.redirect) {
                 window.location.href = data.redirect;
+            } else {
+                window.location.reload();
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error processing sale: ' + (error.message || 'Unknown error occurred'));
+            let errorMessage = 'An error occurred while processing your request.';
+            
+            if (error.response) {
+                // Handle HTTP error responses
+                errorMessage = error.response.data?.message || errorMessage;
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
+            alert(errorMessage);
+            submitButton.disabled = false;
+            submitButton.innerHTML = 'Create Sale';
         });
     });
 });

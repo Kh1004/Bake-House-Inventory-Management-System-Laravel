@@ -38,6 +38,33 @@ class ProfileController extends Controller
     }
 
     /**
+     * Show the change password form.
+     */
+    public function showChangePasswordForm(): View
+    {
+        return view('profile.change-password');
+    }
+
+    /**
+     * Handle password change request.
+     */
+    public function changePassword(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'current_password' => ['required', 'current_password'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $user = $request->user();
+        $user->update([
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        return Redirect::route('profile.edit')
+            ->with('status', 'password-updated');
+    }
+
+    /**
      * Delete the user's account.
      */
     public function destroy(Request $request): RedirectResponse

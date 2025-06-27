@@ -52,6 +52,14 @@ class Sale extends Model
     }
 
     /**
+     * Get the items for the sale.
+     */
+    public function items()
+    {
+        return $this->hasMany(SaleProduct::class);
+    }
+
+    /**
      * The products that belong to the sale.
      */
     public function products(): BelongsToMany
