@@ -5,6 +5,7 @@ namespace Database\Seeders;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Database\Seeders\PredictionFeedbackSeeder;
+use Database\Seeders\PurchaseOrderSeeder;
 use Database\Seeders\SalesDataSeeder;
 
 class DatabaseSeeder extends Seeder
@@ -25,6 +26,7 @@ class DatabaseSeeder extends Seeder
             CustomerSeeder::class,
             SalesDataSeeder::class,
             PredictionFeedbackSeeder::class,
+            PurchaseOrderSeeder::class,
         ]);
     }
 }

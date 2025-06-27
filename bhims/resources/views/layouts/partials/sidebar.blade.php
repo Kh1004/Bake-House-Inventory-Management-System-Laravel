@@ -246,6 +246,32 @@
             </div>
         </div>
 
+        <!-- Purchase Orders -->
+        <div x-data="{ open: {{ in_array($currentRoute, ['purchase-orders.index', 'purchase-orders.create', 'purchase-orders.show']) ? 'true' : 'false' }} }">
+            <button @click="open = !open" 
+                    class="group w-full flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive(['purchase-orders.index', 'purchase-orders.create', 'purchase-orders.show']) }} transition-colors duration-200">
+                <svg class="mr-3 h-6 w-6 flex-shrink-0 {{ in_array($currentRoute, ['purchase-orders.index', 'purchase-orders.create', 'purchase-orders.show']) ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }}" 
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                {{ __('Purchase Orders') }}
+                <svg :class="{'rotate-90': open}" class="ml-auto h-5 w-5 transform transition-transform duration-200 text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300" 
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+            <div x-show="open" class="mt-1 space-y-1 pl-12">
+                <a href="{{ route('purchase-orders.index') }}" 
+                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('purchase-orders.index') }} transition-colors duration-200">
+                    {{ __('All Orders') }}
+                </a>
+                <a href="{{ route('purchase-orders.create') }}" 
+                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('purchase-orders.create') }} transition-colors duration-200">
+                    {{ __('New Order') }}
+                </a>
+            </div>
+        </div>
+
         <!-- Sales -->
         <div x-data="{ open: {{ in_array($currentRoute, ['sales.index', 'sales.create', 'sales.show']) ? 'true' : 'false' }} }">
             <button @click="open = !open" 

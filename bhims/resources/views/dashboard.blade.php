@@ -81,11 +81,79 @@
                     </svg>
                 </div>
                 <div>
-                    <h3 class="text-gray-500 text-sm font-medium">Pending Orders</h3>
-                    <p class="text-2xl font-semibold text-gray-800">7</p>
-                    <p class="text-xs text-gray-500">Awaiting fulfillment</p>
+                    <h3 class="text-gray-500 text-sm font-medium">Purchase Orders</h3>
+                    <p class="text-2xl font-semibold text-gray-800">{{ \App\Models\PurchaseOrder::where('status', 'pending')->count() }}</p>
+                    <a href="{{ route('purchase-orders.index') }}" class="text-xs text-purple-600 hover:underline">View all purchase orders</a>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Recent Purchase Orders -->
+    <div class="bg-white rounded-lg shadow mb-8">
+        <div class="p-6 border-b border-gray-200">
+            <div class="flex justify-between items-center">
+                <h2 class="text-lg font-semibold text-gray-800">Recent Purchase Orders</h2>
+                <a href="{{ route('purchase-orders.index') }}" class="text-sm text-indigo-600 hover:text-indigo-800">View All</a>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PO Number</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse(\App\Models\PurchaseOrder::with('supplier')->latest()->take(5)->get() as $order)
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <a href="{{ route('purchase-orders.show', $order) }}" class="text-indigo-600 hover:text-indigo-900 font-medium">
+                                {{ $order->po_number }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ $order->supplier->name }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ $order->order_date->format('M d, Y') }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @php
+                                $statusClasses = [
+                                    'pending' => 'bg-yellow-100 text-yellow-800',
+                                    'received' => 'bg-green-100 text-green-800',
+                                    'partially_received' => 'bg-blue-100 text-blue-800',
+                                    'cancelled' => 'bg-red-100 text-red-800',
+                                ];
+                                $statusLabels = [
+                                    'pending' => 'Pending',
+                                    'received' => 'Received',
+                                    'partially_received' => 'Partially Received',
+                                    'cancelled' => 'Cancelled',
+                                ];
+                            @endphp
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClasses[$order->status] ?? 'bg-gray-100 text-gray-800' }}">
+                                {{ $statusLabels[$order->status] ?? $order->status }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            ₹{{ number_format($order->total_amount, 2) }}
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
+                            No purchase orders found.
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 

@@ -28,26 +28,17 @@
             <div class="flex flex-col space-y-4">
                 <div class="flex justify-between items-center">
                     <h2 id="chartTitle" class="text-lg md:text-xl font-semibold text-gray-900">Demand Prediction</h2>
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center space-x-2">
-                            <span class="inline-block w-3 h-3 rounded-full bg-indigo-500"></span>
-                            <span class="text-xs text-gray-600">Historical</span>
-                            <span class="inline-block w-3 h-3 rounded-full bg-pink-500 ml-2"></span>
-                            <span class="text-xs text-gray-600">Moving Avg</span>
-                            <span class="inline-block w-3 h-3 rounded-full bg-emerald-500 ml-2"></span>
-                            <span class="text-xs text-gray-600">Prediction</span>
-                        </div>
-                        <button id="toggleFullscreen" class="ml-2 p-1 text-gray-500 hover:text-gray-700 focus:outline-none" title="Toggle fullscreen">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                            </svg>
-                        </button>
+                    <div class="flex items-center space-x-2">
+                        <span class="inline-block w-3 h-3 rounded-full bg-indigo-500"></span>
+                        <span class="text-xs text-gray-600">Historical</span>
+                        <span class="inline-block w-3 h-3 rounded-full bg-pink-500 ml-2"></span>
+                        <span class="text-xs text-gray-600">Moving Avg</span>
+                        <span class="inline-block w-3 h-3 rounded-full bg-emerald-500 ml-2"></span>
+                        <span class="text-xs text-gray-600">Prediction</span>
                     </div>
                 </div>
-                <div id="chart-fullscreen-container" class="relative" style="height: 400px;">
-                    <div class="chart-container" style="position: relative; height: 100%; width: 100%;">
-                        <canvas id="demandChart"></canvas>
-                    </div>
+                <div class="relative" style="height: 400px;">
+                    <canvas id="demandChart"></canvas>
                 </div>
             </div>
         </div>
@@ -129,70 +120,10 @@
     </div>
 </div>
 
-@push('styles')
-<style>
-    /* Fullscreen styles */
-    #chart-fullscreen-container:fullscreen {
-        width: 100%;
-        height: 100%;
-        background: white;
-        padding: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    #chart-fullscreen-container:-webkit-full-screen {
-        width: 100%;
-        height: 100%;
-        background: white;
-        padding: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    #chart-fullscreen-container:-ms-fullscreen {
-        width: 100%;
-        height: 100%;
-        background: white;
-        padding: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    #chart-fullscreen-container:-moz-full-screen {
-        width: 100%;
-        height: 100%;
-        background: white;
-        padding: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .fullscreen .chart-container {
-        width: 100% !important;
-        height: 90% !important;
-    }
-    
-    /* Hide other content when in fullscreen */
-    body:has(#chart-fullscreen-container:fullscreen) > :not(#chart-fullscreen-container),
-    body:has(#chart-fullscreen-container:-webkit-full-screen) > :not(#chart-fullscreen-container) {
-        display: none !important;
-    }
-    
-    /* Ensure the chart takes full width in fullscreen */
-    #chart-fullscreen-container:fullscreen .chart-container {
-        width: 100% !important;
-        height: 100% !important;
-    }
-</style>
-@endpush
-
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/format/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script>
     let demandChart;
 
@@ -346,23 +277,24 @@
                         }
                     },
                     x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day',
+                            displayFormats: {
+                                day: 'MMM d'  // This will show dates like "Jun 27"
+                            },
+                            tooltipFormat: 'EEE, MMM d, yyyy'  // This will show full date in tooltip
+                        },
                         title: {
                             display: true,
-                            text: 'Date',
-                            font: {
-                                weight: 'bold'
-                            }
+                            text: 'Date'
                         },
                         grid: {
                             display: false
                         },
                         ticks: {
                             maxRotation: 45,
-                            minRotation: 45,
-                            callback: function(value) {
-                                // Format date as 'MMM D' (e.g., 'Jun 27')
-                                return new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                            }
+                            minRotation: 45
                         }
                     }
                 },
@@ -515,118 +447,19 @@
     }
     
     // Initialize
-    // Fullscreen functionality
-    function toggleFullscreen() {
-        const container = document.getElementById('chart-fullscreen-container');
-        const fullscreenBtn = document.getElementById('toggleFullscreen');
-        
-        if (!document.fullscreenElement) {
-            // Enter fullscreen
-            if (container.requestFullscreen) {
-                container.requestFullscreen().catch(err => {
-                    console.error('Error attempting to enable fullscreen:', err);
-                });
-            } else if (container.webkitRequestFullscreen) {
-                container.webkitRequestFullscreen();
-            } else if (container.msRequestFullscreen) {
-                container.msRequestFullscreen();
-            }
-            
-            // Update button icon
-            updateFullscreenIcon(true);
-        } else {
-            // Exit fullscreen
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            } else if (document.msExitFullscreen) {
-                document.msExitFullscreen();
-            }
-            
-            updateFullscreenIcon(false);
-        }
-    }
-    
-    function updateFullscreenIcon(isFullscreen) {
-        const fullscreenBtn = document.getElementById('toggleFullscreen');
-        if (!fullscreenBtn) return;
-        
-        if (isFullscreen) {
-            fullscreenBtn.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            `;
-            fullscreenBtn.title = 'Exit fullscreen';
-            document.body.classList.add('overflow-hidden');
-        } else {
-            fullscreenBtn.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                </svg>
-            `;
-            fullscreenBtn.title = 'Enter fullscreen';
-            document.body.classList.remove('overflow-hidden');
-        }
-        
-        // Trigger resize event for chart
-        if (demandChart) {
-            setTimeout(() => {
-                demandChart.resize();
-            }, 100);
-        }
-    }
-    
-    // Handle fullscreen change events
-    function handleFullscreenChange() {
-        const isFullscreen = !!(document.fullscreenElement || document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement);
-        updateFullscreenIcon(isFullscreen);
-        
-        // Force chart resize after a short delay to ensure container has resized
-        if (demandChart) {
-            setTimeout(() => {
-                demandChart.resize();
-            }, 100);
-        }
-    }
-    
-    // Add event listeners for fullscreen changes
-    ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(event => {
-        document.addEventListener(event, handleFullscreenChange);
-    });
+
 
     document.addEventListener('DOMContentLoaded', function() {
         const productSelect = document.getElementById('product_id');
         const methodSelect = document.getElementById('prediction_method');
         const feedbackForm = document.getElementById('predictionFeedbackForm');
-        const fullscreenBtn = document.getElementById('toggleFullscreen');
-        const chartContainer = document.getElementById('chart-fullscreen-container');
         
-        // Add click event for fullscreen toggle
-        if (fullscreenBtn) {
-            fullscreenBtn.addEventListener('click', toggleFullscreen);
-        }
-        
-        // Add resize observer to handle container size changes
-        if (typeof ResizeObserver !== 'undefined' && chartContainer) {
-            const resizeObserver = new ResizeObserver(entries => {
-                if (demandChart) {
-                    // Use a small timeout to ensure the container has finished resizing
-                    setTimeout(() => {
-                        demandChart.resize();
-                        demandChart.update('resize');
-                    }, 100);
-                }
-            });
-            
-            resizeObserver.observe(chartContainer);
-            
-            // Cleanup observer when component unmounts
-            window.addEventListener('beforeunload', () => {
-                resizeObserver.disconnect();
-            });
-        }
+        // Simple resize handler for the chart
+        window.addEventListener('resize', function() {
+            if (demandChart) {
+                demandChart.resize();
+            }
+        });
         
         // Load initial data
         function loadAllData() {
@@ -639,6 +472,7 @@
         function updatePrediction() {
             const productId = productSelect.value;
             loadPredictionData(productId);
+            loadAccuracyStats(productId);
             
             // Update feedback form with current product and method
             document.getElementById('feedbackProductId').value = productId;
@@ -699,6 +533,7 @@
         
         // Initial load
         updatePrediction();
+        loadAccuracyStats(productSelect.value);
         
         // Set up feedback form with initial values
         document.getElementById('feedbackProductId').value = productSelect.value;

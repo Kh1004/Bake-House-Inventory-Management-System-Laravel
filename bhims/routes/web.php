@@ -108,6 +108,11 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('recipes', \App\Http\Controllers\RecipeController::class);
     Route::put('recipes/{recipe}/toggle-status', [\App\Http\Controllers\RecipeController::class, 'toggleStatus'])
         ->name('recipes.toggle-status');
+        
+    // Purchase Orders Routes
+    Route::resource('purchase-orders', \App\Http\Controllers\PurchaseOrderController::class)->except(['edit', 'update']);
+    Route::post('purchase-orders/{purchaseOrder}/update-status', [\App\Http\Controllers\PurchaseOrderController::class, 'updateStatus'])
+        ->name('purchase-orders.update-status');
 });
 
 // Demand Prediction Routes

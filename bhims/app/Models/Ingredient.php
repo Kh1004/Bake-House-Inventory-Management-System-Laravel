@@ -55,4 +55,12 @@ class Ingredient extends Model
     {
         return $this->belongsTo(Supplier::class);
     }
+    
+    /**
+     * Get all purchase order items for the ingredient.
+     */
+    public function purchaseOrderItems()
+    {
+        return $this->hasMany(PurchaseOrderItem::class);
+    }
 }

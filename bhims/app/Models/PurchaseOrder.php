@@ -17,6 +17,7 @@ class PurchaseOrder extends Model
         'status',
         'notes',
         'total_amount',
+        'item_count',
     ];
 
     protected $casts = [
@@ -38,5 +39,24 @@ class PurchaseOrder extends Model
     public function items(): HasMany
     {
         return $this->hasMany(PurchaseOrderItem::class);
+    }
+    
+    /**
+     * Get the number of items in the purchase order.
+     * Uses the cached item_count if available, otherwise counts the items.
+     *
+     * @return int
+     */
+    public function getItemCountAttribute($value)
+    {
+        if ($value !== null) {
+            return $value;
+        }
+        
+        // If item_count is not set, count the items and update the cached value
+        $count = $this->items()->count();
+        $this->update(['item_count' => $count]);
+        
+        return $count;
     }
 }
