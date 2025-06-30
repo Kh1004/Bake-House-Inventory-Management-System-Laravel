@@ -11,6 +11,7 @@ use App\Models\PurchaseOrder;
 use App\Models\ProductionBatch;
 use App\Models\StockMovement;
 use App\Models\ProductStockMovement;
+use App\Models\AlertConfiguration;
 
 class User extends Authenticatable
 {
@@ -159,6 +160,14 @@ class User extends Authenticatable
     public function stockMovements()
     {
         return $this->hasMany(StockMovement::class);
+    }
+    
+    /**
+     * Get all of the alert configurations for the user.
+     */
+    public function alertConfigurations()
+    {
+        return $this->hasMany(AlertConfiguration::class);
     }
 
     /**

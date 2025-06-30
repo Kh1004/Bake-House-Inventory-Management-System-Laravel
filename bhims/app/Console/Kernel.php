@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         Commands\CheckLowStock::class,
+        Commands\CheckAlerts::class,
     ];
 
     /**
@@ -27,6 +28,12 @@ class Kernel extends ConsoleKernel
         // Check for low stock items every hour
         $schedule->command('inventory:check-low-stock')
                  ->hourly()
+                 ->withoutOverlapping()
+                 ->runInBackground();
+                 
+        // Check and send alerts every 5 minutes
+        $schedule->command('alerts:check')
+                 ->everyFiveMinutes()
                  ->withoutOverlapping()
                  ->runInBackground();
     }

@@ -56,15 +56,6 @@
             </div>
         </div>
 
-        <!-- Demand Prediction -->
-        <a href="{{ route('demand-prediction.index') }}" 
-           class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('demand-prediction.index') }} transition-colors duration-200">
-            <svg class="mr-3 h-6 w-6 flex-shrink-0 {{ $currentRoute === 'demand-prediction.index' ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }}" 
-                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-            {{ __('Demand Prediction') }}
-        </a>
 
         <!-- Ingredients -->
         <div x-data="{ open: {{ in_array($currentRoute, ['ingredients.index', 'ingredients.create', 'ingredients.edit', 'ingredients.low-stock']) ? 'true' : 'false' }} }">
@@ -341,13 +332,51 @@
             <div x-show="open" class="mt-1 space-y-1 pl-12">
                 <a href="{{ route('reports.sales') }}" 
                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('reports.sales') }} transition-colors duration-200">
-                    {{ __('Sales Reports') }}
+                    {{ __('Sales Report') }}
                 </a>
                 <a href="{{ route('reports.inventory') }}" 
                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('reports.inventory') }} transition-colors duration-200">
-                    {{ __('Inventory Reports') }}
+                    {{ __('Inventory Report') }}
                 </a>
             </div>
+        </div>
+
+        <!-- Predictions Group -->
+        <div x-data="{ open: {{ in_array($currentRoute, ['market-prediction.index', 'demand-prediction.index']) ? 'true' : 'false' }} }">
+            <button @click="open = !open" 
+                    class="group w-full flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive(['market-prediction.index', 'demand-prediction.index']) }} transition-colors duration-200">
+                <svg class="mr-3 h-6 w-6 flex-shrink-0 {{ in_array($currentRoute, ['market-prediction.index', 'demand-prediction.index']) ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }}" 
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                {{ __('Predictions') }}
+                <svg :class="{'rotate-90': open}" class="ml-auto h-5 w-5 transform transition-transform duration-200 text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300" 
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </button>
+            <div x-show="open" class="mt-1 space-y-1 pl-12">
+                <a href="{{ route('market-prediction.index') }}" 
+                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('market-prediction.index') }} transition-colors duration-200">
+                    {{ __('Market Prediction') }}
+                </a>
+                <a href="{{ route('demand-prediction.index') }}" 
+                   class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('demand-prediction.index') }} transition-colors duration-200">
+                    {{ __('Demand Prediction') }}
+                </a>
+            </div>
+        </div>
+
+        <!-- Alert Settings -->
+        <div class="pt-2">
+            <a href="{{ route('settings.alerts.index') }}" 
+               class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('settings.alerts.index') }} transition-colors duration-200">
+                <svg class="mr-3 h-6 w-6 flex-shrink-0 {{ $isActive('settings.alerts.index') ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }}" 
+                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                {{ __('Alert Settings') }}
+            </a>
         </div>
     </nav>
 

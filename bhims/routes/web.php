@@ -44,6 +44,18 @@ Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'ove
 // Authentication Routes
 require __DIR__.'/auth.php';
 
+// Alert Settings Routes
+Route::prefix('settings')->name('settings.')->middleware(['auth'])->group(function () {
+    Route::resource('alerts', \App\Http\Controllers\Settings\AlertSettingsController::class)->names('alerts');
+    
+    // Explicitly define the index route to ensure it's available
+    Route::get('/alerts', [\App\Http\Controllers\Settings\AlertSettingsController::class, 'index'])
+        ->name('alerts.index');
+});
+
+// Alert Configuration Routes
+require __DIR__.'/alert-configurations.php';
+
 // Test routes (remove in production)
 if (app()->environment('local')) {
     require __DIR__.'/test-activity.php';
@@ -58,9 +70,37 @@ Route::middleware(['auth'])->group(function () {
 
 // Authenticated Routes
 Route::middleware(['auth'])->group(function () {
-    // Test authenticated route
+        // Test authenticated route
     Route::get('/test-authenticated', function() {
         return 'Authenticated test route works!';
+    });
+
+    // Test direct route
+    Route::get('/test-market-route', function() {
+        return 'Test market route works!';
+    });
+
+    // Market Prediction Dashboard Web Route
+    Route::get('market-prediction', [\App\Http\Controllers\MarketPredictionDashboardController::class, 'index'])
+        ->name('market-prediction.index');
+    
+    // Market Prediction API Routes
+    Route::prefix('api/market-predictions')->name('market-predictions.')->group(function () {
+        // Get dashboard data
+        Route::get('/dashboard', [\App\Http\Controllers\MarketPredictionDashboardController::class, 'getDashboardData'])
+            ->name('dashboard');
+            
+        // Get demand forecast
+        Route::get('/products/{product}/forecast', [\App\Http\Controllers\MarketPredictionController::class, 'getDemandForecast'])
+            ->name('forecast');
+            
+        // Get sales trends
+        Route::get('/products/{product}/trends', [\App\Http\Controllers\MarketPredictionController::class, 'getSalesTrends'])
+            ->name('trends');
+            
+        // Get inventory recommendations
+        Route::get('/products/{product}/recommendations', [\App\Http\Controllers\MarketPredictionController::class, 'getInventoryRecommendations'])
+            ->name('recommendations');
     });
 
     // User Management Routes
