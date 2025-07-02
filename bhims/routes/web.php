@@ -70,10 +70,36 @@ Route::middleware(['auth'])->group(function () {
 
 // Authenticated Routes
 Route::middleware(['auth'])->group(function () {
-        // Test authenticated route
+    // Test authenticated route
     Route::get('/test-authenticated', function() {
         return 'Authenticated test route works!';
     });
+    
+    // Temporary debug route
+    Route::get('/debug-alerts', function() {
+        $alerts = \App\Models\Alert::all();
+        $unreadCount = \App\Models\Alert::where('is_read', false)->count();
+        $userAlerts = \App\Models\Alert::where('user_id', auth()->id())->get();
+        
+        return [
+            'all_alerts' => $alerts,
+            'unread_count' => $unreadCount,
+            'user_alerts' => $userAlerts,
+            'current_user_id' => auth()->id(),
+            'total_alerts' => $alerts->count(),
+        ];
+    })->middleware('auth');
+    
+    // Test route to display alert configurations
+    Route::get('/test-alerts', function() {
+        $alerts = \App\Models\Alert::where('user_id', auth()->id())
+            ->latest()
+            ->paginate(10); // Show 10 alerts per page
+        return view('test.alerts', ['alerts' => $alerts]);
+    })->name('test-alerts');
+    
+    // Alert routes
+    Route::resource('alerts', \App\Http\Controllers\AlertController::class)->only(['destroy']);
 
     // Test direct route
     Route::get('/test-market-route', function() {

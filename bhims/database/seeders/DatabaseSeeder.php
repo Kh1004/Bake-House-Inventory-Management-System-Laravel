@@ -7,6 +7,9 @@ use Illuminate\Database\Seeder;
 use Database\Seeders\PredictionFeedbackSeeder;
 use Database\Seeders\PurchaseOrderSeeder;
 use Database\Seeders\SalesDataSeeder;
+use Database\Seeders\AlertDemoSeeder;
+use Database\Seeders\TestAlertSeeder;
+use Database\Seeders\TestAlertsSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -27,6 +30,9 @@ class DatabaseSeeder extends Seeder
             SalesDataSeeder::class,
             PredictionFeedbackSeeder::class,
             PurchaseOrderSeeder::class,
+            AlertDemoSeeder::class,
+            TestAlertSeeder::class,
+            TestAlertsSeeder::class,
         ]);
     }
 }

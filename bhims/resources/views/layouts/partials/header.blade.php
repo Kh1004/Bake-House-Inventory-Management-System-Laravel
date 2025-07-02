@@ -55,17 +55,57 @@
                     </svg>
                 </button>
 
-                <!-- Notifications -->
+                <!-- Notifications & Alerts -->
                 <div class="ml-4 relative" x-data="{ open: false }">
-                    <button @click="open = !open" class="p-1 rounded-full text-gray-500 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <span class="sr-only">View notifications</span>
+                    <button @click="open = !open" class="p-1 rounded-full text-gray-500 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 relative">
+                        <span class="sr-only">View notifications and alerts</span>
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                         </svg>
+                        @if($activeAlertsCount > 0)
+                            <span class="notification-badge absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
+                                {{ $activeAlertsCount }}
+                            </span>
+                        @else
+                            <span class="notification-badge hidden"></span>
+                        @endif
                     </button>
                     <div x-show="open" @click.away="open = false" class="origin-top-right absolute right-0 mt-2 w-80 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none z-50" style="display: none;">
                         <div class="py-1">
-                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">No new notifications</a>
+                            <div class="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                Alerts ({{ $activeAlertsCount }})
+                            </div>
+                            @if($activeAlertsCount > 0)
+                                <a href="{{ route('settings.alerts.index') }}" class="block px-4 py-2 text-sm text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-gray-700">
+                                    <div class="flex items-center">
+                                        <svg class="h-5 w-5 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                        <span>You have {{ $activeAlertsCount }} active alert{{ $activeAlertsCount > 1 ? 's' : '' }}</span>
+                                    </div>
+                                </a>
+                            @else
+                                <div class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">No active alerts</div>
+                            @endif
+                            
+                            <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                            
+                            <div class="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                Notifications
+                            </div>
+                            <a href="{{ route('test-alerts') }}" class="block px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                <div class="flex items-center">
+                                    <svg class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span>View All Alerts</span>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2 text-right">
+                            <a href="{{ route('settings.alerts.index') }}" class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
+                                Manage Alerts
+                            </a>
                         </div>
                     </div>
                 </div>

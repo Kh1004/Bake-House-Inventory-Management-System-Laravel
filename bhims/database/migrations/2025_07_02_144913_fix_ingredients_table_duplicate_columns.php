@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('ingredients', function (Blueprint $table) {
+            // Check if columns exist before adding them
             if (!Schema::hasColumn('ingredients', 'unit_of_measure')) {
                 $table->string('unit_of_measure')->default('kg')->after('description');
             }

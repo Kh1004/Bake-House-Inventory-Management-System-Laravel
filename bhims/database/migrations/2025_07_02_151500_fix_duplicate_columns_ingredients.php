@@ -6,10 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
-    public function up(): void
+    public function up()
     {
         Schema::table('ingredients', function (Blueprint $table) {
             if (!Schema::hasColumn('ingredients', 'unit_of_measure')) {
@@ -33,12 +30,8 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
-        // We won't drop columns in the down migration to prevent data loss
-        // If you need to rollback, create a new migration
+        // No need to drop columns in down migration to prevent data loss
     }
 };
