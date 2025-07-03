@@ -17,17 +17,19 @@ class UserSeeder extends Seeder
     public function run()
     {
         // Create admin user
-        User::create([
-            'name' => 'Admin User',
-            'email' => 'admin@bakehouse.com',
-            'password' => Hash::make('password'),
-            'phone' => '+1 (555) 123-4567',
-            'role' => 'admin',
-            'is_active' => true,
-            'email_verified_at' => now(),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        User::firstOrCreate(
+            ['email' => 'admin@bakehouse.com'],
+            [
+                'name' => 'Admin User',
+                'password' => Hash::make('password'),
+                'phone' => '+1 (555) 123-4567',
+                'role' => 'admin',
+                'is_active' => true,
+                'email_verified_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
 
         // Create managers
         $managers = [
@@ -44,17 +46,19 @@ class UserSeeder extends Seeder
         ];
 
         foreach ($managers as $manager) {
-            User::create([
-                'name' => $manager['name'],
-                'email' => $manager['email'],
-                'password' => Hash::make('password'),
-                'phone' => $manager['phone'],
-                'role' => 'manager',
-                'is_active' => true,
-                'email_verified_at' => now(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            User::firstOrCreate(
+                ['email' => $manager['email']],
+                [
+                    'name' => $manager['name'],
+                    'password' => Hash::make('password'),
+                    'phone' => $manager['phone'],
+                    'role' => 'manager',
+                    'is_active' => true,
+                    'email_verified_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
         }
 
 
@@ -88,47 +92,83 @@ class UserSeeder extends Seeder
         ];
 
         foreach ($staffMembers as $staff) {
-            User::create([
-                'name' => $staff['name'],
-                'email' => $staff['email'],
-                'password' => Hash::make('password'),
-                'phone' => $staff['phone'],
-                'role' => 'staff',
-                'is_active' => true,
-                'email_verified_at' => now(),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            User::firstOrCreate(
+                ['email' => $staff['email']],
+                [
+                    'name' => $staff['name'],
+                    'password' => Hash::make('password'),
+                    'phone' => $staff['phone'],
+                    'role' => 'staff',
+                    'is_active' => true,
+                    'email_verified_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+        }
+
+        // Create bakers
+        $bakers = [
+            [
+                'name' => 'Emma Wilson',
+                'email' => 'emma.wilson@bakehouse.com',
+                'phone' => '+1 (555) 456-7890',
+            ],
+            [
+                'name' => 'James Brown',
+                'email' => 'james.brown@bakehouse.com',
+                'phone' => '+1 (555) 567-8901',
+            ]
+        ];
+
+        foreach ($bakers as $baker) {
+            User::firstOrCreate(
+                ['email' => $baker['email']],
+                [
+                    'name' => $baker['name'],
+                    'password' => Hash::make('password'),
+                    'phone' => $baker['phone'],
+                    'role' => 'baker',
+                    'is_active' => true,
+                    'email_verified_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
         }
 
         // Create some inactive accounts
         $inactiveUsers = [
             [
-                'name' => 'Inactive Staff',
-                'email' => 'inactive.staff@bakehouse.com',
-                'phone' => '+1 (555) 111-2233',
+                'name' => 'Inactive User',
+                'email' => 'inactive@bakehouse.com',
+                'phone' => '+1 (555) 999-9999',
                 'role' => 'staff',
+                'is_active' => false,
             ],
             [
-                'name' => 'Old Manager',
-                'email' => 'old.manager@bakehouse.com',
-                'phone' => '+1 (555) 222-3344',
-                'role' => 'manager',
+                'name' => 'Past Employee',
+                'email' => 'past.employee@bakehouse.com',
+                'phone' => '+1 (555) 888-8888',
+                'role' => 'staff',
+                'is_active' => false,
             ]
         ];
 
         foreach ($inactiveUsers as $user) {
-            User::create([
-                'name' => $user['name'],
-                'email' => $user['email'],
-                'password' => Hash::make('password'),
-                'phone' => $user['phone'],
-                'role' => $user['role'],
-                'is_active' => false,
-                'email_verified_at' => now(),
-                'created_at' => now()->subMonths(3),
-                'updated_at' => now()->subMonths(2),
-            ]);
+            User::firstOrCreate(
+                ['email' => $user['email']],
+                [
+                    'name' => $user['name'],
+                    'password' => Hash::make('password'),
+                    'phone' => $user['phone'],
+                    'role' => $user['role'],
+                    'is_active' => $user['is_active'],
+                    'email_verified_at' => now(),
+                    'created_at' => now()->subMonths(3),
+                    'updated_at' => now()->subMonths(3),
+                ]
+            );
         }
     }
 }

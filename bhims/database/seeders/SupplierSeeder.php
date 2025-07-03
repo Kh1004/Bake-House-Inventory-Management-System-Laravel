@@ -51,14 +51,17 @@ class SupplierSeeder extends Seeder
                 'contact_person' => 'David Wilson',
                 'email' => 'david@bakingessentials.com',
                 'phone' => '555-0105',
-                'address' => '654 Mixer Drive, Bakerstown, BK 56789',
+                'address' => '654 Mixer Drive, Batterton, BT 56789',
                 'tax_number' => 'TAX-56789012',
                 'notes' => 'One-stop shop for all baking needs',
             ],
         ];
 
         foreach ($suppliers as $supplier) {
-            Supplier::create($supplier);
+            Supplier::firstOrCreate(
+                ['email' => $supplier['email']],
+                $supplier
+            );
         }
     }
 }
