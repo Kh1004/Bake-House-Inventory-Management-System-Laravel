@@ -2,18 +2,25 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Permission\Models\Role as SpatieRole;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Role extends Model
+class Role extends SpatieRole
 {
     protected $fillable = [
         'name',
+        'guard_name',
         'description',
     ];
 
-    public function users(): HasMany
+    public function users(): BelongsToMany
     {
-        return $this->hasMany(User::class);
+        return $this->morphedByMany(
+            config('permission.models.user'),
+            'model',
+            config('permission.table_names.model_has_roles'),
+            'role_id',
+            config('permission.column_names.model_morph_key')
+        )->where('model_type', config('permission.models.user'));
     }
 }

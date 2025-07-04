@@ -15,10 +15,10 @@ use Illuminate\Support\Facades\DB;
 |--------------------------------------------------------------------------
 */
 
-// Home Route
-Route::get('/', function () {
-    return view('welcome');
-});
+// Home Route - Show dashboard
+Route::get('/', [\App\Http\Controllers\DashboardController::class, 'overview'])
+    ->middleware(['auth', 'verified'])
+    ->name('home');
 
 // Test route
 Route::get('/test-low-stock', function() {
@@ -43,6 +43,15 @@ Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'ove
 
 // Authentication Routes
 require __DIR__.'/auth.php';
+
+// Roles & Permissions Routes
+Route::middleware(['auth'])->group(function () {
+    // Roles
+    Route::resource('roles', \App\Http\Controllers\RoleController::class);
+    
+    // Permissions
+    Route::resource('permissions', \App\Http\Controllers\PermissionController::class);
+});
 
 // Alert Settings Routes
 Route::prefix('settings')->name('settings.')->middleware(['auth'])->group(function () {

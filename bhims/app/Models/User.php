@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Activitylog\Traits\CausesActivity;
+use Spatie\Permission\Traits\HasRoles;
 use App\Models\Role;
 use App\Models\PurchaseOrder;
 use App\Models\ProductionBatch;
@@ -15,7 +16,7 @@ use App\Models\AlertConfiguration;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, CausesActivity;
+    use HasFactory, Notifiable, CausesActivity, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -27,7 +28,6 @@ class User extends Authenticatable
         'email',
         'password',
         'phone',
-        'role',
         'is_active',
     ];
 
