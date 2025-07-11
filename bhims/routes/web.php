@@ -173,12 +173,31 @@ Route::middleware(['auth'])->group(function () {
     // Customers Routes
     Route::resource('customers', \App\Http\Controllers\CustomerController::class);
     
+    // Settings Routes
+    Route::prefix('settings')->name('settings.')->group(function () {
+        Route::get('alerts', [\App\Http\Controllers\AlertConfigurationController::class, 'index'])->name('alerts.index');
+        Route::post('alerts', [\App\Http\Controllers\AlertConfigurationController::class, 'store'])->name('alerts.store');
+        Route::put('alerts/{alert}', [\App\Http\Controllers\AlertConfigurationController::class, 'update'])->name('alerts.update');
+        Route::delete('alerts/{alert}', [\App\Http\Controllers\AlertConfigurationController::class, 'destroy'])->name('alerts.destroy');
+    });
+
     // Reports Routes
     Route::prefix('reports')->group(function () {
         Route::get('/sales', [\App\Http\Controllers\ReportController::class, 'sales'])->name('reports.sales');
         Route::get('/inventory', [\App\Http\Controllers\ReportController::class, 'inventory'])->name('reports.inventory');
     });
-    
+
+    // Competitor Analysis Routes
+    Route::prefix('competitor-analysis')->name('competitor-analysis.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\CompetitorAnalysisController::class, 'index'])->name('index');
+        Route::get('create', [\App\Http\Controllers\CompetitorAnalysisController::class, 'create'])->name('create');
+        Route::post('/', [\App\Http\Controllers\CompetitorAnalysisController::class, 'store'])->name('store');
+        Route::get('edit/{analysis}', [\App\Http\Controllers\CompetitorAnalysisController::class, 'edit'])->name('edit');
+        Route::put('update/{analysis}', [\App\Http\Controllers\CompetitorAnalysisController::class, 'update'])->name('update');
+        Route::delete('delete/{analysis}', [\App\Http\Controllers\CompetitorAnalysisController::class, 'destroy'])->name('delete');
+        Route::get('dashboard', [\App\Http\Controllers\CompetitorAnalysisController::class, 'dashboard'])->name('dashboard');
+    });
+
     // Recipes Routes
     Route::resource('recipes', \App\Http\Controllers\RecipeController::class);
     Route::put('recipes/{recipe}/toggle-status', [\App\Http\Controllers\RecipeController::class, 'toggleStatus'])

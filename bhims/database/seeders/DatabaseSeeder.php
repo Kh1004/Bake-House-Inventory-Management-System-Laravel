@@ -9,6 +9,7 @@ use Database\Seeders\PurchaseOrderSeeder;
 use Database\Seeders\SalesDataSeeder;
 use Database\Seeders\AlertDemoSeeder;
 use Database\Seeders\TestAlertsSeeder;
+use Database\Seeders\CompetitorAnalysisSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -31,6 +32,7 @@ class DatabaseSeeder extends Seeder
             PredictionFeedbackSeeder::class,
             PurchaseOrderSeeder::class,
             TestAlertsSeeder::class,
+            CompetitorAnalysisSeeder::class,
         ]);
     }
 }

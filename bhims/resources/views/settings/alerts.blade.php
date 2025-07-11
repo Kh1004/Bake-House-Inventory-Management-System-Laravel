@@ -82,7 +82,7 @@
                                 <div class="space-y-4">
                                     <h4 class="text-sm font-medium text-gray-700">Notification Channels</h4>
                                     <div class="space-y-2">
-                                        @foreach(['email' => 'Email', 'in_app' => 'In-App', 'sms' => 'SMS'] as $channel => $label)
+                                        @foreach(['in_app' => 'In-App'] as $channel => $label)
                                             <div class="flex items-center">
                                                 <input id="channel-{{ $type['type'] }}-{{ $channel }}" 
                                                     name="channels[]" 
