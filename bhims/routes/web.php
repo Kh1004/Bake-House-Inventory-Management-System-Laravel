@@ -187,6 +187,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/inventory', [\App\Http\Controllers\ReportController::class, 'inventory'])->name('reports.inventory');
     });
 
+    // Profile Routes
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    });
+
     // Competitor Analysis Routes
     Route::prefix('competitor-analysis')->name('competitor-analysis.')->group(function () {
         Route::get('/', [\App\Http\Controllers\CompetitorAnalysisController::class, 'index'])->name('index');
