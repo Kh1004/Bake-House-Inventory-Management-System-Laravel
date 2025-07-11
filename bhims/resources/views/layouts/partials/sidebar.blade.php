@@ -118,7 +118,7 @@
         @endcan
 
         <!-- Roles & Permissions -->
-        <div x-data="{ open: {{ in_array($currentRoute, ['roles.index', 'roles.create', 'roles.edit', 'permissions.index']) ? 'true' : 'false' }} }">
+        <!-- <div x-data="{ open: {{ in_array($currentRoute, ['roles.index', 'roles.create', 'roles.edit', 'permissions.index']) ? 'true' : 'false' }} }">
             <button @click="open = !open" 
                     class="group w-full flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive(['roles.index', 'roles.create', 'roles.edit', 'permissions.index']) }} transition-colors duration-200">
                 <svg class="mr-3 h-6 w-6 flex-shrink-0 {{ in_array($currentRoute, ['roles.index', 'roles.create', 'roles.edit', 'permissions.index']) ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }}" 
@@ -141,7 +141,7 @@
                     {{ __('Permissions') }}
                 </a>
             </div>
-        </div>
+        </div> -->
 
         <!-- Categories -->
         <div x-data="{ open: {{ in_array($currentRoute, ['categories.index', 'categories.create', 'categories.edit']) ? 'true' : 'false' }} }">
@@ -382,10 +382,10 @@
                 </svg>
             </button>
             <div x-show="open" class="mt-1 space-y-1 pl-12">
-                <a href="{{ route('market-prediction.index') }}" 
+                <!-- <a href="{{ route('market-prediction.index') }}" 
                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('market-prediction.index') }} transition-colors duration-200">
                     {{ __('Market Prediction') }}
-                </a>
+                </a> -->
                 <a href="{{ route('demand-prediction.index') }}" 
                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('demand-prediction.index') }} transition-colors duration-200">
                     {{ __('Demand Prediction') }}

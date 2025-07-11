@@ -92,25 +92,6 @@ class PermissionSeeder extends Seeder
         ];
         $staffRole->givePermissionTo($staffPermissions);
 
-        // Assign permissions to baker role
-        $bakerRole = Role::where('name', 'baker')->first();
-        $bakerPermissions = [
-            'view products',
-            'view inventory',
-            'view orders',
-        ];
-        $bakerRole->givePermissionTo($bakerPermissions);
 
-        // Assign permissions to inventory manager role
-        $inventoryManagerRole = Role::where('name', 'inventory_manager')->first();
-        $inventoryManagerPermissions = [
-            'view inventory',
-            'manage inventory',
-            'view products',
-            'create products',
-            'edit products',
-            'view orders',
-        ];
-        $inventoryManagerRole->givePermissionTo($inventoryManagerPermissions);
     }
 }

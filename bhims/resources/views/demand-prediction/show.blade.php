@@ -22,6 +22,16 @@
                     <option value="arima">ARIMA (Advanced)</option>
                 </select>
             </div>
+            <div>
+                <label for="prediction_period" class="block text-sm font-medium text-gray-700">Prediction Period</label>
+                <select id="prediction_period" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
+                    <option value="7">Next Week (7 days)</option>
+                    <option value="14">Next 2 Weeks (14 days)</option>
+                    <option value="30">Next Month (30 days)</option>
+                    <option value="60">Next 2 Months (60 days)</option>
+                    <option value="90">Next 3 Months (90 days)</option>
+                </select>
+            </div>
         </div>
 
         <div class="bg-white p-4 md:p-6 rounded-lg shadow">
@@ -135,8 +145,10 @@
         }
         
         const method = document.getElementById('prediction_method').value;
+        const period = document.getElementById('prediction_period').value;
         const url = new URL(`/demand-prediction/api/predict-demand/${productId}`, window.location.origin);
         url.searchParams.append('method', method);
+        url.searchParams.append('days_ahead', period);
         
         console.log('API URL:', url.toString());
         
@@ -530,6 +542,7 @@
         // Set up event listeners
         productSelect.addEventListener('change', updatePrediction);
         methodSelect.addEventListener('change', updatePrediction);
+        document.getElementById('prediction_period').addEventListener('change', updatePrediction);
         
         // Initial load
         updatePrediction();
