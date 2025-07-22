@@ -247,8 +247,7 @@
                 @endif
 
                 <!-- Status Update Form -->
-                @if(in_array($purchaseOrder->status, ['pending', 'partially_received']))
-                    <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                         <div class="md:flex md:items-center md:justify-between mb-4">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-white">Update Order Status</h3>
                             <span class="mt-2 md:mt-0 inline-flex rounded-md shadow-sm">
@@ -269,9 +268,10 @@
                                         <div class="col-span-6 sm:col-span-3">
                                             <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
                                             <select name="status" id="status" class="mt-1 block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                                <option value="received" {{ $purchaseOrder->status === 'received' ? 'selected' : '' }}>Fully Received</option>
-                                                <option value="partially_received" {{ $purchaseOrder->status === 'partially_received' ? 'selected' : '' }}>Partially Received</option>
-                                                <option value="cancelled">Cancel Order</option>
+                                                <option value="draft" {{ $purchaseOrder->status === 'draft' ? 'selected' : '' }}>Draft</option>
+                                                <option value="ordered" {{ $purchaseOrder->status === 'ordered' ? 'selected' : '' }}>Ordered</option>
+                                                <option value="received" {{ $purchaseOrder->status === 'received' ? 'selected' : '' }}>Received</option>
+                                                <option value="cancelled" {{ $purchaseOrder->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                                             </select>
                                         </div>
 
@@ -342,7 +342,6 @@
                             </div>
                         </form>
                     </div>
-                @endif
 
                 <!-- Action Buttons -->
                 <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 flex justify-between">

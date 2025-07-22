@@ -67,7 +67,7 @@
                             </div>
                             <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                                 <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Order Total</p>
-                                <p class="text-2xl font-semibold text-gray-900 dark:text-white" id="orderTotal">₹0.00</p>
+                                <p class="text-2xl font-semibold text-gray-900 dark:text-white" id="orderTotal">Rs 0.00</p>
                             </div>
                         </div>
                     </div>
@@ -86,7 +86,7 @@
                     <div class="flex justify-end mb-6">
                         <div class="text-right">
                             <p class="text-sm text-gray-500 dark:text-gray-400">Total Amount:</p>
-                            <p id="totalAmount" class="text-2xl font-bold text-gray-900 dark:text-white">₹0.00</p>
+                            <p id="totalAmount" class="text-2xl font-bold text-gray-900 dark:text-white">Rs 0.00</p>
                             <input type="hidden" name="total_amount" id="totalAmountInput" value="0">
                         </div>
                     </div>
@@ -119,21 +119,10 @@
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Ingredient <span class="text-red-500">*</span>
                 </label>
-                <select name="items[{{index}}][ingredient_id]" required
+                <select name="items[__INDEX__][ingredient_id]" required
                     class="ingredient-select mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-600 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                    data-index="{{index}}">
+                    data-index="__INDEX__">
                     <option value="">Select an ingredient</option>
-                    @foreach($ingredients as $ingredient)
-                        <option value="{{ $ingredient->id }}" 
-                                data-unit="{{ $ingredient->unit_of_measure }}"
-                                data-current-stock="{{ $ingredient->current_stock }}"
-                                data-min-stock="{{ $ingredient->minimum_stock }}">
-                            {{ $ingredient->name }} ({{ $ingredient->unit_of_measure }})
-                            @if($ingredient->current_stock <= $ingredient->minimum_stock)
-                                - Low Stock
-                            @endif
-                        </option>
-                    @endforeach
                 </select>
                 <div class="stock-info mt-1 text-xs text-gray-500 dark:text-gray-400 hidden"></div>
             </div>
@@ -142,7 +131,7 @@
                     Quantity <span class="text-red-500">*</span>
                 </label>
                 <div class="mt-1 flex rounded-md shadow-sm">
-                    <input type="number" name="items[{{index}}][quantity]" required step="0.01" min="0.01"
+                    <input type="number" name="items[__INDEX__][quantity]" required step="0.01" min="0.01"
                         class="quantity-input focus:ring-blue-500 focus:border-blue-500 block w-full rounded-l-md sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-600 dark:text-white"
                         placeholder="0.00">
                     <span class="unit-display inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm whitespace-nowrap">
@@ -153,16 +142,16 @@
             </div>
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Unit Price (₹) <span class="text-red-500">*</span>
+                    Unit Price (Rs.) <span class="text-red-500">*</span>
                 </label>
-                <input type="number" name="items[{{index}}][unit_price]" required step="0.01" min="0.01"
+                <input type="number" name="items[__INDEX__][unit_price]" required step="0.01" min="0.01"
                     class="price-input focus:ring-blue-500 focus:border-blue-500 block w-full rounded-md sm:text-sm border-gray-300 dark:border-gray-600 dark:bg-gray-600 dark:text-white"
                     placeholder="0.00">
             </div>
             <div class="md:col-span-3 flex items-end">
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">Total:</p>
-                    <p class="item-total text-lg font-semibold text-gray-900 dark:text-white">₹0.00</p>
+                    <p class="item-total text-lg font-semibold text-gray-900 dark:text-white">Rs. 0.00</p>
                 </div>
             </div>
             <div class="md:col-span-1 flex items-end justify-end">
@@ -185,11 +174,16 @@
         const supplierSelect = document.getElementById('supplier_id');
         let itemIndex = 0;
         
+        // Ingredients data from the server
+        const ingredients = @json($ingredients ?? []);
+        
         // Low stock items passed from the controller
         const lowStockItems = @json($lowStockItems ?? []);
+        let itemsAdded = false;
         
         // Add low stock items when the page loads if there are any
         if (lowStockItems.length > 0) {
+            itemsAdded = true;
             // Group items by supplier
             const itemsBySupplier = lowStockItems.reduce((acc, item) => {
                 if (!acc[item.supplier_id]) {
@@ -212,43 +206,125 @@
                     itemsBySupplier[supplierIds[0]].forEach(item => {
                         addItemWithValues(item);
                     });
+                    // Recalculate totals after all items are added
+                    setTimeout(calculateTotals, 100);
                 }, 300);
             } else {
                 // If multiple suppliers, just add all items
                 lowStockItems.forEach(item => {
                     addItemWithValues(item);
                 });
+                // Recalculate totals after all items are added
+                setTimeout(calculateTotals, 100);
             }
         }
 
-        // Add new item
-        addItemBtn.addEventListener('click', function() {
-            addNewItem();
+        // Add new item when button is clicked - only if previous item has ingredient selected
+        addItemBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation(); // Prevent any bubbling that might cause duplicate events
+            
+            // Get all items
+            const items = document.querySelectorAll('.order-item');
+            
+            // If no items exist, allow adding first item
+            if (items.length === 0) {
+                addNewItem();
+                return;
+            }
+            
+            // Get the last item
+            const lastItem = items[items.length - 1];
+            const lastIngredientSelect = lastItem.querySelector('.ingredient-select');
+            
+            // Check if last item has ingredient selected
+            if (lastIngredientSelect && lastIngredientSelect.value) {
+                addNewItem();
+                return;
+            }
+            
+            // If validation fails
+            alert('Please select an ingredient for the current item before adding a new one.');
+            // Focus on the last item's ingredient select
+            if (lastIngredientSelect) {
+                lastIngredientSelect.focus();
+            }
+            // Return nothing to prevent any further execution
+            return;
         });
 
-        // Add first item by default
-        addNewItem();
+        // Only add low stock items automatically, no default empty item
+        if (itemsAdded) {
+            // If we added low stock items, populate their dropdowns
+            document.querySelectorAll('.ingredient-select').forEach(select => {
+                populateIngredientDropdown(select);
+            });
+        }
 
         // Add new item function
         function addNewItem() {
-            const newItem = itemTemplate.innerHTML.replace(/\{\{index\}\}/g, itemIndex);
-            const itemElement = document.createElement('div');
-            itemElement.className = 'order-item';
-            itemElement.innerHTML = newItem;
+            const newItem = document.importNode(itemTemplate.content, true);
+            const itemElement = newItem.querySelector('.order-item');
             
+            // Set unique IDs and names for the new item
+            const newIndex = itemIndex++;
+            const fields = itemElement.querySelectorAll('[id]');
+            fields.forEach(field => {
+                const id = field.id.replace('__INDEX__', newIndex);
+                field.id = id;
+                if (field.name) {
+                    field.name = field.name.replace('[__INDEX__]', `[${newIndex}]`);
+                }
+            });
+            
+            // Add the item to the DOM
             orderItems.appendChild(itemElement);
             
-            // Initialize the new item
+            // Initialize the item
             initializeItem(itemElement);
+            
+            // Focus on the ingredient select
+            const select = itemElement.querySelector('.ingredient-select');
+            if (select) {
+                select.focus();
+            }
+            
+            // Update remove buttons state
+            updateRemoveButtons();
+            
+            return itemElement;
             
             itemIndex++;
             updateRemoveButtons();
         }
 
+        // Function to populate ingredient dropdown
+        function populateIngredientDropdown(selectElement) {
+            // Clear existing options except the first one
+            while (selectElement.options.length > 1) {
+                selectElement.remove(1);
+            }
+            
+            // Add ingredients from the server data
+            ingredients.forEach(ingredient => {
+                const option = document.createElement('option');
+                option.value = ingredient.id;
+                option.textContent = `${ingredient.name} (${ingredient.unit_of_measure})` + 
+                                    (ingredient.current_stock <= ingredient.minimum_stock ? ' - Low Stock' : '');
+                option.dataset.unit = ingredient.unit_of_measure;
+                option.dataset.currentStock = ingredient.current_stock;
+                option.dataset.minStock = ingredient.minimum_stock;
+                selectElement.appendChild(option);
+            });
+        }
+        
         // Function to initialize event listeners for an item
         function initializeItemEventListeners(itemElement) {
-            // Update unit of measure and stock info when ingredient changes
             const select = itemElement.querySelector('.ingredient-select');
+            if (select) {
+                populateIngredientDropdown(select);
+            }
+            // Update unit of measure and stock info when ingredient changes
             const unitDisplay = itemElement.querySelector('.unit-display');
             const stockInfo = itemElement.querySelector('.stock-info');
             const suggestedQty = itemElement.querySelector('.suggested-quantity');
@@ -296,13 +372,23 @@
             }
             
             // Track if user has modified the quantity
-            qtyInput.addEventListener('input', function() {
-                this.dataset.userModified = 'true';
+            const handleQtyInput = () => {
+                qtyInput.dataset.userModified = 'true';
                 calculateItemTotal(itemElement);
-            });
+            };
+            
+            // Remove any existing event listeners to prevent duplicates
+            qtyInput.removeEventListener('input', handleQtyInput);
+            qtyInput.addEventListener('input', handleQtyInput);
             
             // Update on ingredient change
-            select.addEventListener('change', updateIngredientInfo);
+            const handleIngredientChange = (e) => {
+                updateIngredientInfo();
+                // Also update totals when ingredient changes
+                calculateItemTotal(itemElement);
+            };
+            select.removeEventListener('change', handleIngredientChange);
+            select.addEventListener('change', handleIngredientChange);
             
             // Initialize display
             updateIngredientInfo();
@@ -310,14 +396,17 @@
             // Remove item button
             const removeBtn = itemElement.querySelector('.remove-item-btn');
             if (removeBtn) {
-                removeBtn.addEventListener('click', function() {
+                const handleRemoveClick = () => {
                     if (document.querySelectorAll('.order-item').length > 1) {
                         itemElement.remove();
                         calculateTotals();
+                        updateRemoveButtons();
                     } else {
                         alert('At least one item is required');
                     }
-                });
+                };
+                removeBtn.removeEventListener('click', handleRemoveClick);
+                removeBtn.addEventListener('click', handleRemoveClick);
             }
         }
         
@@ -329,7 +418,7 @@
             
             const totalElement = itemElement.querySelector('.item-total');
             if (totalElement) {
-                totalElement.textContent = '₹' + total.toFixed(2);
+                totalElement.textContent = 'Rs ' + total.toFixed(2);
             }
             
             // Validate quantity is positive
@@ -357,21 +446,31 @@
             let totalItems = 0;
             let totalQuantity = 0;
             
-            document.querySelectorAll('.order-item').forEach(item => {
-                const quantity = parseFloat(item.querySelector('.quantity-input').value) || 0;
-                const price = parseFloat(item.querySelector('.price-input').value) || 0;
-                const itemTotal = quantity * price;
-                total += itemTotal;
+            // Get all items that have an ingredient selected
+            const items = Array.from(document.querySelectorAll('.order-item'));
+            
+            // Calculate totals for all items with an ingredient selected
+            items.forEach(item => {
+                const ingredientSelect = item.querySelector('.ingredient-select');
+                const quantity = parseFloat(item.querySelector('.quantity-input')?.value) || 0;
+                const price = parseFloat(item.querySelector('.price-input')?.value) || 0;
                 
-                if (quantity > 0 && price >= 0) {
+                // Only count items with an ingredient selected
+                if (ingredientSelect?.value) {
                     totalItems++;
-                    totalQuantity += quantity;
-                }
-                
-                // Update item total display
-                const totalElement = item.querySelector('.item-total');
-                if (totalElement) {
-                    totalElement.textContent = '₹' + itemTotal.toFixed(2);
+                    
+                    // Only add to total if quantity and price are valid
+                    if (quantity > 0 && price >= 0.01) {
+                        const itemTotal = quantity * price;
+                        total += itemTotal;
+                        totalQuantity += quantity;
+                        
+                        // Update item total display
+                        const totalElement = item.querySelector('.item-total');
+                        if (totalElement) {
+                            totalElement.textContent = 'Rs ' + itemTotal.toFixed(2);
+                        }
+                    }
                 }
             });
             
@@ -380,7 +479,7 @@
             const totalItemsElement = document.getElementById('totalItems');
             const totalQuantityElement = document.getElementById('totalQuantity');
             
-            if (orderTotalElement) orderTotalElement.textContent = '₹' + total.toFixed(2);
+            if (orderTotalElement) orderTotalElement.textContent = 'Rs ' + total.toFixed(2);
             if (totalItemsElement) totalItemsElement.textContent = totalItems;
             if (totalQuantityElement) totalQuantityElement.textContent = totalQuantity.toFixed(2);
             
@@ -407,14 +506,67 @@
             }
         }
         
+        // Function to initialize a new item
+        function initializeItem(itemElement) {
+            // Initialize event listeners for the item
+            initializeItemEventListeners(itemElement);
+            
+            // Add click event for delete button
+            const removeBtn = itemElement.querySelector('.remove-item-btn');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', function() {
+                    itemElement.remove();
+                    calculateTotals();
+                    updateRemoveButtons();
+                });
+            }
+            
+            // Initialize quantity input
+            const qtyInput = itemElement.querySelector('.quantity-input');
+            if (qtyInput) {
+                const handleQtyInput = () => {
+                    calculateItemTotal(itemElement);
+                };
+                qtyInput.removeEventListener('input', handleQtyInput);
+                qtyInput.addEventListener('input', handleQtyInput);
+            }
+            
+            // Initialize price input
+            const priceInput = itemElement.querySelector('.price-input');
+            if (priceInput) {
+                const handlePriceInput = (e) => {
+                    // Ensure price is at least 0.01
+                    if (parseFloat(e.target.value) < 0.01) {
+                        e.target.value = '0.01';
+                    }
+                    calculateItemTotal(itemElement);
+                };
+                priceInput.removeEventListener('input', handlePriceInput);
+                priceInput.addEventListener('input', handlePriceInput);
+                
+                // Also add change event for when user clicks away
+                const handlePriceChange = (e) => {
+                    if (!e.target.value || parseFloat(e.target.value) < 0.01) {
+                        e.target.value = '0.01';
+                        calculateItemTotal(itemElement);
+                    }
+                };
+                priceInput.removeEventListener('change', handlePriceChange);
+                priceInput.addEventListener('change', handlePriceChange);
+            }
+            
+            // Trigger initial calculation
+            calculateItemTotal(itemElement);
+        }
+        
         // Initialize event listeners for all existing items
         document.querySelectorAll('.order-item').forEach(item => {
-            initializeItemEventListeners(item);
+            initializeItem(item);
         });
         
         // If no items and no low stock items, add one empty item
         if (document.querySelectorAll('.order-item').length === 0 && (!lowStockItems || lowStockItems.length === 0)) {
-            addItem();
+            addNewItem();
         }
         
         // Add event listener for the add item button
@@ -465,15 +617,53 @@
                 }
             });
             
-            // Set the ingredient if provided
+            // Add the item to the DOM first
+            orderItems.appendChild(itemElement);
+            
+            // Initialize the item
+            initializeItem(itemElement);
+            
+            // Set the ingredient if provided (must be after initialization)
             if (ingredientId) {
                 const select = itemElement.querySelector('select[name$="[ingredient_id]"]');
                 if (select) {
+                    // Set the value directly first
                     select.value = ingredientId;
-                    // Trigger change to update unit of measure
+                    
+                    // Manually update the ingredient info
+                    const unitDisplay = itemElement.querySelector('.unit-display');
+                    if (unitDisplay) {
+                        const selectedOption = select.options[select.selectedIndex];
+                        if (selectedOption) {
+                            unitDisplay.textContent = selectedOption.getAttribute('data-unit') || '';
+                        }
+                    }
+                    
+                    // Trigger change to update other fields
                     const event = new Event('change');
                     select.dispatchEvent(event);
                 }
+                
+                // Set quantity if provided
+                if (quantity) {
+                    const qtyInput = itemElement.querySelector('.quantity-input');
+                    if (qtyInput) {
+                        qtyInput.value = quantity;
+                    }
+                }
+                
+                // Set unit price if provided
+                if (unitPrice) {
+                    const priceInput = itemElement.querySelector('.price-input');
+                    if (priceInput) {
+                        priceInput.value = unitPrice;
+                    }
+                }
+                
+                // Trigger calculation after a short delay to ensure DOM is updated
+                setTimeout(() => {
+                    calculateItemTotal(itemElement);
+                }, 50);
             }
             
             // Set quantity and unit price if provided
@@ -498,6 +688,9 @@
         
         // Form validation
         document.getElementById('purchaseOrderForm').addEventListener('submit', function(e) {
+            // Recalculate totals before form submission to ensure amounts are up to date
+            calculateTotals();
+            
             const items = document.querySelectorAll('.order-item');
             let isValid = true;
             let hasValidItems = false;

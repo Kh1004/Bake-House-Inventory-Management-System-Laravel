@@ -110,7 +110,7 @@ class PurchaseOrderController extends Controller
                 'user_id' => Auth::id(),
                 'order_date' => now(),
                 'expected_delivery_date' => $validated['expected_delivery_date'],
-                'status' => 'pending',
+                'status' => 'draft',
                 'notes' => $validated['notes'] ?? null,
                 'total_amount' => $validated['total_amount'],
             ]);
@@ -133,10 +133,12 @@ class PurchaseOrderController extends Controller
                 
                 // Create order item data
                 $orderItems[] = [
+                    'purchase_order_id' => $purchaseOrder->id, // Add the purchase order ID
                     'ingredient_id' => $item['ingredient_id'],
                     'quantity' => $item['quantity'],
                     'unit_price' => $item['unit_price'],
                     'total_price' => $item['quantity'] * $item['unit_price'],
+                    'status' => 'pending', // Add default status
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];
@@ -223,7 +225,7 @@ class PurchaseOrderController extends Controller
     {
         // Validate the request
         $validated = $request->validate([
-            'status' => 'required|in:received,partially_received,cancelled',
+            'status' => 'required|in:draft,ordered,received,cancelled',
             'notes' => 'nullable|string',
             'items' => 'sometimes|required|array',
             'items.*.ingredient_id' => 'required|exists:ingredients,id',
@@ -238,8 +240,8 @@ class PurchaseOrderController extends Controller
             $totalReceived = 0;
             $totalOrdered = $purchaseOrder->items->sum('quantity');
 
-            // If status is received or partially received, validate received quantities
-            if (in_array($status, ['received', 'partially_received'])) {
+            // If status is received, validate received quantities
+            if ($status === 'received') {
                 if (empty($items)) {
                     return redirect()->back()
                         ->with('error', 'Please enter received quantities for at least one item.')
@@ -258,9 +260,9 @@ class PurchaseOrderController extends Controller
                         }
                         
                         $newReceivedQty = ($item->received_quantity ?? 0) + $receivedQty;
+                        // Only update received quantity, status is managed at the purchase order level
                         $item->update([
-                            'received_quantity' => $newReceivedQty,
-                            'status' => $newReceivedQty >= $item->quantity ? 'received' : 'partially_received'
+                            'received_quantity' => $newReceivedQty
                         ]);
                         
                         $totalReceived += $receivedQty;
@@ -280,9 +282,9 @@ class PurchaseOrderController extends Controller
                     }
                 }
                 
-                // Determine the actual status based on received quantities
-                if ($status === 'received' && $totalReceived < $totalOrdered) {
-                    $status = 'partially_received';
+                // If we've received some items but not all, set status to 'ordered'
+                if ($totalReceived > 0 && $totalReceived < $totalOrdered) {
+                    $status = 'ordered';
                 }
             } else if ($status === 'cancelled') {
                 // Mark all items as cancelled
@@ -296,7 +298,7 @@ class PurchaseOrderController extends Controller
             $purchaseOrder->update([
                 'status' => $status,
                 'notes' => $validated['notes'] ?? $purchaseOrder->notes,
-                'received_at' => in_array($status, ['received', 'partially_received']) ? now() : null
+                'received_at' => $status === 'received' ? now() : null
             ]);
 
             // Log the status update

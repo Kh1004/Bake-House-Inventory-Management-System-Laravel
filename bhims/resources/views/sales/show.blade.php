@@ -416,30 +416,52 @@
                                     <td colspan="4" class="text-end"><strong>Subtotal</strong></td>
                                     <td class="text-end">{{ number_format($sale->subtotal, 2) }}</td>
                                 </tr>
-                                @if($sale->tax_amount > 0)
-                                <tr>
+                                <tr @if($sale->tax_amount == 0) class="d-none" @endif>
                                     <td colspan="4" class="text-end"><strong>Tax</strong></td>
-                                    <td class="text-end">{{ number_format($sale->tax_amount, 2) }}</td>
+                                    <td class="text-end">
+                                        @if($sale->tax_amount > 0)
+                                            Rs. {{ number_format($sale->tax_amount, 2) }}
+                                        @else
+                                            Free
+                                        @endif
+                                    </td>
                                 </tr>
-                                @endif
-                                @if($sale->discount_amount > 0)
-                                <tr>
+                                <tr @if($sale->discount_amount == 0) class="d-none" @endif>
                                     <td colspan="4" class="text-end"><strong>Discount</strong></td>
-                                    <td class="text-end">-{{ number_format($sale->discount_amount, 2) }}</td>
+                                    <td class="text-end">
+                                        @if($sale->discount_amount > 0)
+                                            -Rs. {{ number_format($sale->discount_amount, 2) }}
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
                                 </tr>
-                                @endif
-                                <tr>
-                                    <td colspan="4" class="text-end"><strong>Total</strong></td>
-                                    <td class="text-end"><strong>{{ number_format($sale->total, 2) }}</strong></td>
+                                <tr class="border-top">
+                                    <td colspan="4" class="text-end">
+                                        <h5 class="mb-0 fw-bold">Total Amount</h5>
+                                        <small class="text-muted">Including tax and discounts</small>
+                                    </td>
+                                    <td class="text-end">
+                                        <h4 class="mb-0 fw-bold text-primary">
+                                            Rs. {{ number_format($sale->total, 2) }}
+                                        </h4>
+                                        @if($sale->tax_amount > 0 || $sale->discount_amount > 0)
+                                        <small class="text-muted d-block">
+                                            Subtotal: Rs. {{ number_format($sale->subtotal, 2) }}
+                                            @if($sale->tax_amount > 0) • Tax: Rs. {{ number_format($sale->tax_amount, 2) }}@endif
+                                            @if($sale->discount_amount > 0) • Discount: -Rs. {{ number_format($sale->discount_amount, 2) }}@endif
+                                        </small>
+                                        @endif
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td colspan="4" class="text-end"><strong>Amount Paid</strong></td>
-                                    <td class="text-end">{{ number_format($sale->amount_paid, 2) }}</td>
+                                    <td class="text-end">Rs. {{ number_format($sale->amount_paid, 2) }}</td>
                                 </tr>
                                 @if($sale->change_amount > 0)
                                 <tr>
                                     <td colspan="4" class="text-end"><strong>Change</strong></td>
-                                    <td class="text-end">{{ number_format($sale->change_amount, 2) }}</td>
+                                    <td class="text-end">Rs. {{ number_format($sale->change_amount, 2) }}</td>
                                 </tr>
                                 @endif
                             </tfoot>

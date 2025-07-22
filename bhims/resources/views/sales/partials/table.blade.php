@@ -43,7 +43,7 @@
                         {{ $sale->items->count() }} items
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        {{ config('settings.currency_symbol') }}{{ number_format($sale->total_amount, 2) }}
+                        Rs. {{ number_format($sale->total, 2) }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center">
                         @php
