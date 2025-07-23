@@ -69,6 +69,22 @@ class PurchaseOrderController extends Controller
      */
     public function store(Request $request)
     {
+        // Log the incoming request data for debugging
+        \Log::info('Purchase Order Store Request:', $request->all());
+        
+        // Check if items is a JSON string and decode it
+        $items = $request->input('items');
+        if (is_string($items)) {
+            $items = json_decode($items, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                \Log::error('Invalid items JSON:', ['items' => $request->input('items')]);
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Invalid items data. Please try again.');
+            }
+            $request->merge(['items' => $items]);
+        }
+
         $validated = $request->validate([
             'supplier_id' => 'required|exists:suppliers,id',
             'expected_delivery_date' => 'required|date|after_or_equal:today',
@@ -81,9 +97,13 @@ class PurchaseOrderController extends Controller
         ], [
             'items.required' => 'Please add at least one item to the purchase order.',
             'items.*.ingredient_id.required' => 'Please select an ingredient for all items.',
+            'items.*.quantity.required' => 'Please enter a quantity for all items.',
             'items.*.quantity.min' => 'Quantity must be greater than 0.',
+            'items.*.unit_price.required' => 'Please enter a unit price for all items.',
             'items.*.unit_price.min' => 'Unit price cannot be negative.',
         ]);
+        
+        \Log::info('Validated data:', $validated);
 
         DB::beginTransaction();
 
@@ -172,6 +192,119 @@ class PurchaseOrderController extends Controller
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'An error occurred while creating the purchase order: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update the specified purchase order in storage.
+     */
+    public function update(Request $request, PurchaseOrder $purchaseOrder)
+    {
+        // Only allow updates to draft or pending orders
+        if (!in_array($purchaseOrder->status, ['draft', 'pending'])) {
+            return redirect()->back()
+                ->with('error', 'Only draft or pending purchase orders can be updated.');
+        }
+
+        $validated = $request->validate([
+            'supplier_id' => 'required|exists:suppliers,id',
+            'expected_delivery_date' => 'required|date|after_or_equal:today',
+            'notes' => 'nullable|string|max:1000',
+            'total_amount' => 'required|numeric|min:0',
+            'items' => 'required|array|min:1',
+            'items.*.ingredient_id' => 'required|exists:ingredients,id',
+            'items.*.quantity' => 'required|numeric|min:0.01',
+            'items.*.unit_price' => 'required|numeric|min:0',
+        ], [
+            'items.required' => 'Please add at least one item to the purchase order.',
+            'items.*.ingredient_id.required' => 'Please select an ingredient for all items.',
+            'items.*.quantity.min' => 'Quantity must be greater than 0.',
+            'items.*.unit_price.min' => 'Unit price cannot be negative.',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            // Calculate total amount from items (as a secondary validation)
+            $calculatedTotal = collect($validated['items'])->sum(function($item) {
+                return $item['quantity'] * $item['unit_price'];
+            });
+            
+            // Verify calculated total matches the submitted total (prevent tampering)
+            if (abs($calculatedTotal - $validated['total_amount']) > 0.01) {
+                return redirect()->back()
+                    ->withInput()
+                    ->withErrors(['total_amount' => 'The calculated total does not match the submitted total.']);
+            }
+
+            // Update purchase order
+            $purchaseOrder->update([
+                'supplier_id' => $validated['supplier_id'],
+                'expected_delivery_date' => $validated['expected_delivery_date'],
+                'notes' => $validated['notes'] ?? null,
+                'total_amount' => $validated['total_amount'],
+            ]);
+
+            // Delete existing items
+            $purchaseOrder->items()->delete();
+
+            // Add new items
+            $ingredientIds = [];
+            $orderItems = [];
+            $now = now();
+            
+            foreach ($validated['items'] as $item) {
+                // Check for duplicate ingredients
+                if (in_array($item['ingredient_id'], $ingredientIds)) {
+                    DB::rollBack();
+                    return redirect()->back()
+                        ->withInput()
+                        ->withErrors(['items' => 'Duplicate ingredients are not allowed.']);
+                }
+                
+                $ingredientIds[] = $item['ingredient_id'];
+                
+                // Create order item data
+                $orderItems[] = [
+                    'purchase_order_id' => $purchaseOrder->id,
+                    'ingredient_id' => $item['ingredient_id'],
+                    'quantity' => $item['quantity'],
+                    'unit_price' => $item['unit_price'],
+                    'total_price' => $item['quantity'] * $item['unit_price'],
+                    'status' => 'pending',
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+            
+            // Insert all items at once for better performance
+            $purchaseOrder->items()->insert($orderItems);
+            
+            // Update purchase order with item count
+            $purchaseOrder->update([
+                'item_count' => count($orderItems)
+            ]);
+            
+            // Log the purchase order update
+            activity()
+                ->causedBy(auth()->user())
+                ->performedOn($purchaseOrder)
+                ->withProperties(['items_count' => count($orderItems)])
+                ->log('updated purchase order');
+
+            DB::commit();
+
+            return redirect()->route('purchase-orders.show', $purchaseOrder)
+                ->with('success', 'Purchase order #' . $purchaseOrder->po_number . ' has been updated successfully!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error updating purchase order: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+            
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'An error occurred while updating the purchase order: ' . $e->getMessage());
         }
     }
 

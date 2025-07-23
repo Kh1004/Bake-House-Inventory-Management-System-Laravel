@@ -173,13 +173,7 @@ Route::middleware(['auth'])->group(function () {
     // Customers Routes
     Route::resource('customers', \App\Http\Controllers\CustomerController::class);
     
-    // Settings Routes
-    Route::prefix('settings')->name('settings.')->group(function () {
-        Route::get('alerts', [\App\Http\Controllers\AlertConfigurationController::class, 'index'])->name('alerts.index');
-        Route::post('alerts', [\App\Http\Controllers\AlertConfigurationController::class, 'store'])->name('alerts.store');
-        Route::put('alerts/{alert}', [\App\Http\Controllers\AlertConfigurationController::class, 'update'])->name('alerts.update');
-        Route::delete('alerts/{alert}', [\App\Http\Controllers\AlertConfigurationController::class, 'destroy'])->name('alerts.destroy');
-    });
+    // Settings Routes - Using AlertSettingsController for all alert settings
 
     // Reports Routes
     Route::prefix('reports')->group(function () {
@@ -211,7 +205,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('recipes.toggle-status');
         
     // Purchase Orders Routes
-    Route::resource('purchase-orders', \App\Http\Controllers\PurchaseOrderController::class)->except(['edit', 'update']);
+    Route::resource('purchase-orders', \App\Http\Controllers\PurchaseOrderController::class)->except(['edit']);
     Route::post('purchase-orders/{purchaseOrder}/update-status', [\App\Http\Controllers\PurchaseOrderController::class, 'updateStatus'])
         ->name('purchase-orders.update-status');
 });

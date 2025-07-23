@@ -104,12 +104,30 @@ class RecipeController extends Controller
                 'is_active' => $validated['is_active'] ?? true,
             ]);
 
-            // Attach ingredients with pivot data
+            // Attach ingredients with pivot data and update stock
             $ingredientsData = [];
             $totalCost = 0;
 
             foreach ($validated['ingredients'] as $ingredientData) {
                 $ingredient = Ingredient::findOrFail($ingredientData['id']);
+                
+                // Check if there's enough stock
+                if ($ingredient->current_stock < $ingredientData['quantity']) {
+                    throw new \Exception("Not enough stock for ingredient: " . $ingredient->name . ". Available: " . $ingredient->current_stock);
+                }
+                
+                // Update ingredient stock
+                $ingredient->decrement('current_stock', $ingredientData['quantity']);
+                
+                // Record stock movement
+                $ingredient->stockMovements()->create([
+                    'quantity' => -$ingredientData['quantity'],
+                    'movement_type' => 'recipe_usage',
+                    'notes' => 'Used in recipe: ' . $validated['name'],
+                    'user_id' => auth()->id(),
+                    'reference_type' => Recipe::class,
+                    'reference_id' => $recipe->id,
+                ]);
                 
                 $ingredientsData[$ingredientData['id']] = [
                     'quantity' => $ingredientData['quantity'],

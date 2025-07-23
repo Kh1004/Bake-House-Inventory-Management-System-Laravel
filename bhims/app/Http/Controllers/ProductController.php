@@ -57,6 +57,33 @@ class ProductController extends Controller
             
             $product = Product::create($validated);
             
+            // If product has a recipe, update ingredient stock
+            if (!empty($validated['recipe_id'])) {
+                $recipe = Recipe::with('ingredients')->findOrFail($validated['recipe_id']);
+                
+                foreach ($recipe->ingredients as $ingredient) {
+                    $quantityUsed = $ingredient->pivot->quantity;
+                    
+                    // Check if there's enough stock
+                    if ($ingredient->current_stock < $quantityUsed) {
+                        throw new \Exception("Not enough stock for ingredient: " . $ingredient->name . ". Available: " . $ingredient->current_stock);
+                    }
+                    
+                    // Update ingredient stock
+                    $ingredient->decrement('current_stock', $quantityUsed);
+                    
+                    // Record stock movement
+                    $ingredient->stockMovements()->create([
+                        'quantity' => -$quantityUsed,
+                        'movement_type' => 'product_production',
+                        'notes' => 'Used in product: ' . $validated['name'],
+                        'user_id' => auth()->id(),
+                        'reference_type' => Product::class,
+                        'reference_id' => $product->id,
+                    ]);
+                }
+            }
+            
             DB::commit();
             
             return redirect()->route('products.show', $product)

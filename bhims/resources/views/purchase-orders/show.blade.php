@@ -105,7 +105,7 @@
                         </div>
                         <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
                             <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Order Total</p>
-                            <p class="text-2xl font-semibold text-gray-900 dark:text-white">₹{{ number_format($purchaseOrder->total_amount, 2) }}</p>
+                            <p class="text-2xl font-semibold text-gray-900 dark:text-white">Rs {{ number_format($purchaseOrder->total_amount, 2) }}</p>
                         </div>
                     </div>
                     

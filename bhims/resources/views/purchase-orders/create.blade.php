@@ -83,13 +83,13 @@
                     </div>
 
                     <!-- Total -->
-                    <div class="flex justify-end mb-6">
+                    <!-- <div class="flex justify-end mb-6">
                         <div class="text-right">
                             <p class="text-sm text-gray-500 dark:text-gray-400">Total Amount:</p>
                             <p id="totalAmount" class="text-2xl font-bold text-gray-900 dark:text-white">Rs 0.00</p>
                             <input type="hidden" name="total_amount" id="totalAmountInput" value="0">
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Form Actions -->
                     <!-- Hidden field for total amount -->
@@ -686,7 +686,7 @@
             return itemElement;
         }
         
-        // Form validation
+        // Form validation and submission
         document.getElementById('purchaseOrderForm').addEventListener('submit', function(e) {
             // Recalculate totals before form submission to ensure amounts are up to date
             calculateTotals();
@@ -695,19 +695,32 @@
             let isValid = true;
             let hasValidItems = false;
             
+            // Prepare items array for validation and submission
+            const itemsData = [];
+            
             // Validate each item
-            items.forEach(item => {
+            items.forEach((item, index) => {
                 const quantity = parseFloat(item.querySelector('.quantity-input').value) || 0;
                 const price = parseFloat(item.querySelector('.price-input').value) || 0;
-                const ingredient = item.querySelector('.ingredient-select').value;
+                const ingredientId = item.querySelector('.ingredient-select').value;
+                
+                // Create item data object
+                const itemData = {
+                    ingredient_id: ingredientId,
+                    quantity: quantity,
+                    unit_price: price
+                };
+                
+                // Add to items array
+                itemsData.push(itemData);
                 
                 // Check if item is valid
-                if (ingredient && quantity > 0 && price >= 0) {
+                if (ingredientId && quantity > 0 && price >= 0) {
                     hasValidItems = true;
                 }
                 
                 // Highlight invalid fields
-                if (!ingredient) {
+                if (!ingredientId) {
                     item.querySelector('.ingredient-select').classList.add('border-red-500');
                     isValid = false;
                 } else {
@@ -728,6 +741,19 @@
                     item.querySelector('.price-input').classList.remove('border-red-500');
                 }
             });
+            
+            // Add hidden input for items
+            const existingItemsInput = document.getElementById('items-input');
+            if (existingItemsInput) {
+                existingItemsInput.remove();
+            }
+            
+            const itemsInput = document.createElement('input');
+            itemsInput.type = 'hidden';
+            itemsInput.name = 'items';
+            itemsInput.id = 'items-input';
+            itemsInput.value = JSON.stringify(itemsData);
+            this.appendChild(itemsInput);
             
             // Check supplier
             const supplierSelect = document.getElementById('supplier_id');
