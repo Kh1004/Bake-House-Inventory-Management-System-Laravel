@@ -1,7 +1,7 @@
 <div class="overflow-x-auto">
-    <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-            <tr>
+    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead class="bg-gray-50 dark:bg-gray-800">
+            <tr class="dark:border-gray-700">
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Sale ID
                 </th>
@@ -25,24 +25,24 @@
                 </th>
             </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
+        <tbody class="bg-white divide-y divide-gray-200 dark:divide-gray-700 dark:bg-gray-900">
             @forelse ($sales as $sale)
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 dark:border-gray-700">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                         #{{ str_pad($sale->id, 6, '0', STR_PAD_LEFT) }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">{{ $sale->customer->name ?? 'Walk-in Customer' }}</div>
-                        <div class="text-sm text-gray-500">{{ $sale->customer->phone ?? 'N/A' }}</div>
+                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ $sale->customer->name ?? 'Walk-in Customer' }}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">{{ $sale->customer->phone ?? 'N/A' }}</div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {{ $sale->created_at->format('M d, Y') }}
-                        <div class="text-xs text-gray-400">{{ $sale->created_at->format('h:i A') }}</div>
+                        <div class="text-xs text-gray-400 dark:text-gray-500">{{ $sale->created_at->format('h:i A') }}</div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {{ $sale->items->count() }} items
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900 dark:text-white">
                         Rs. {{ number_format($sale->total, 2) }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-center">

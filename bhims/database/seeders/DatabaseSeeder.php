@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             SalesDataSeeder::class,
             PredictionFeedbackSeeder::class,
             PurchaseOrderSeeder::class,
+            AlertDemoSeeder::class,
             TestAlertsSeeder::class,
             CompetitorAnalysisSeeder::class,
         ]);

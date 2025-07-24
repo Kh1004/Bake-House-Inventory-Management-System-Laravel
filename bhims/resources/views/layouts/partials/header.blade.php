@@ -56,40 +56,52 @@
                     </button>
                     <div x-show="open" @click.away="open = false" class="origin-top-right absolute right-0 mt-2 w-80 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none z-50" style="display: none;">
                         <div class="py-1">
-                            <div class="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                Alerts ({{ $activeAlertsCount }})
-                            </div>
-                            @if($activeAlertsCount > 0)
-                                <a href="{{ route('settings.alerts.index') }}" class="block px-4 py-2 text-sm text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-gray-700">
-                                    <div class="flex items-center">
-                                        <svg class="h-5 w-5 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            <div class="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider flex justify-between items-center">
+                                <span>Alerts ({{ $activeAlertsCount }})</span>
+                                @if($activeAlertsCount > 0)
+                                    <button @click="open = false" class="text-gray-400 hover:text-gray-500">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                         </svg>
-                                        <span>You have {{ $activeAlertsCount }} active alert{{ $activeAlertsCount > 1 ? 's' : '' }}</span>
-                                    </div>
-                                </a>
-                            @else
-                                <div class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">No active alerts</div>
-                            @endif
-                            
-                            <div class="border-t border-gray-200 dark:border-gray-700 my-1"></div>
-                            
-                            <div class="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                Notifications
+                                    </button>
+                                @endif
                             </div>
-                            <a href="{{ route('test-alerts') }}" class="block px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-700">
-                                <div class="flex items-center">
-                                    <svg class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <span>View All Alerts</span>
+                            
+                            @if($activeAlertsCount > 0)
+                                <div class="max-h-96 overflow-y-auto">
+                                    @foreach($alerts as $alert)
+                                        <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
+                                            <div class="flex items-start">
+                                                <div class="flex-shrink-0 pt-0.5">
+                                                    <svg class="h-5 w-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                    </svg>
+                                                </div>
+                                                <div class="ml-3 flex-1">
+                                                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                        {{ $alert->title }}
+                                                    </p>
+                                                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                                        {{ $alert->message }}
+                                                    </p>
+                                                    <p class="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                                                        {{ $alert->created_at->diffForHumans() }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
                                 </div>
-                            </a>
-                        </div>
-                        <div class="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-2 text-right">
-                            <a href="{{ route('settings.alerts.index') }}" class="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300">
-                                Manage Alerts
-                            </a>
+                                <div class="border-t border-gray-200 dark:border-gray-700">
+                                    <a href="{{ route('alerts.index') }}" class="block px-4 py-2 text-sm text-center text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-gray-700">
+                                        View All Alerts
+                                    </a>
+                                </div>
+                            @else
+                                <div class="px-4 py-3 text-sm text-center text-gray-500 dark:text-gray-400">
+                                    No active alerts
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>

@@ -13,7 +13,23 @@ class AlertController extends Controller
      */
     public function index()
     {
-        //
+        $alerts = Alert::where('user_id', auth()->id())
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+            
+        // Mark alerts as read when viewing the page
+        Alert::where('user_id', auth()->id())
+            ->where('is_read', false)
+            ->update(['is_read' => true]);
+            
+        // Update the active alerts count in the session
+        $activeAlertsCount = Alert::where('user_id', auth()->id())
+            ->where('is_read', false)
+            ->count();
+            
+        session(['activeAlertsCount' => $activeAlertsCount]);
+            
+        return view('alerts.index', compact('alerts'));
     }
 
     /**

@@ -14,6 +14,13 @@
         --dark-color: #212529;
         --border-radius: 0.5rem;
         --box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+        
+        /* Dark mode colors */
+        --dark-bg: #1a1a1a;
+        --dark-card-bg: #2d2d2d;
+        --dark-text: #e0e0e0;
+        --dark-border: #444;
+        --dark-hover: #3a3a3a;
     }
     
     .btn {
@@ -153,6 +160,74 @@
     }
     
     /* Print Styles */
+    /* Dark mode styles */
+    @media (prefers-color-scheme: dark) {
+        body {
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+        }
+        
+        /* Make total amount white in dark mode */
+        .text-primary, h4.text-primary, h4.text-primary .text-primary {
+            color: white !important;
+        }
+        
+        .card, .card-header, .card-footer {
+            background-color: var(--dark-card-bg);
+            border-color: var(--dark-border);
+            color: var(--dark-text);
+        }
+        
+        .table {
+            color: var(--dark-text);
+        }
+        
+        .table thead th {
+            background-color: #333;
+            color: var(--dark-text);
+            border-color: var(--dark-border);
+        }
+        
+        .table tbody td {
+            border-color: var(--dark-border);
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: var(--dark-hover);
+        }
+        
+        .bg-light, .table-light, .table-light > th, .table-light > td {
+            background-color: #2a2a2a !important;
+            color: var(--dark-text);
+        }
+        
+        .text-muted {
+            color: #a0a0a0 !important;
+        }
+        
+        .border, .border-top, .border-end, .border-bottom, .border-start,
+        .table-bordered, .table-bordered th, .table-bordered td {
+            border-color: var(--dark-border) !important;
+        }
+        
+        .bg-white {
+            background-color: var(--dark-card-bg) !important;
+        }
+        
+        .bg-light.bg-opacity-50, .bg-opacity-50 {
+            background-color: rgba(45, 45, 45, 0.5) !important;
+        }
+        
+        .text-dark {
+            color: var(--dark-text) !important;
+        }
+        
+        .badge.bg-light {
+            background-color: #444 !important;
+            color: var(--dark-text) !important;
+        }
+    }
+    
     @media print {
         @page {
             size: A4;

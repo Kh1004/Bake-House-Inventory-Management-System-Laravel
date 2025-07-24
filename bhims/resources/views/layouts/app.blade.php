@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-gray-50 dark:bg-gray-900">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full" x-data="{ dark: $persist(false).as('theme')" :class="{ 'dark': dark }">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
@@ -185,6 +185,38 @@
     </div>
 
     <!-- Alpine.js & Plugins -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('theme', {
+                init() {
+                    // Initialize theme from localStorage or use system preference
+                    const storedTheme = localStorage.getItem('theme');
+                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    
+                    if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
+                        document.documentElement.classList.add('dark');
+                        Alpine.store('theme').dark = true;
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                        Alpine.store('theme').dark = false;
+                    }
+                },
+                
+                dark: false,
+                
+                toggle() {
+                    this.dark = !this.dark;
+                    if (this.dark) {
+                        document.documentElement.classList.add('dark');
+                        localStorage.setItem('theme', 'dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                        localStorage.setItem('theme', 'light');
+                    }
+                }
+            });
+        });
+    </script>
     <script defer src="https://unpkg.com/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://unpkg.com/@alpinejs/transition@3.x.x/dist/cdn.min.js"></script>
     
@@ -198,8 +230,50 @@
     @stack('scripts')
     
     <script>
-        // Initialize sidebar state based on screen size
+        // Initialize Alpine.js store for theme and sidebar
         document.addEventListener('alpine:init', () => {
+            // Theme store
+            Alpine.store('theme', {
+                dark: Alpine.$persist(window.matchMedia('(prefers-color-scheme: dark)').matches).as('darkTheme'),
+                
+                toggle() {
+                    this.dark = !this.dark;
+                    if (this.dark) {
+                        document.documentElement.classList.add('dark');
+                        document.documentElement.style.colorScheme = 'dark';
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                        document.documentElement.style.colorScheme = 'light';
+                    }
+                },
+                
+                init() {
+                    // Set initial theme
+                    if (this.dark) {
+                        document.documentElement.classList.add('dark');
+                        document.documentElement.style.colorScheme = 'dark';
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                        document.documentElement.style.colorScheme = 'light';
+                    }
+                    
+                    // Watch for system theme changes
+                    window.matchMedia('(prefers-color-scheme: dark)').addListener(e => {
+                        if (!('darkTheme' in localStorage)) {
+                            this.dark = e.matches;
+                            if (this.dark) {
+                                document.documentElement.classList.add('dark');
+                                document.documentElement.style.colorScheme = 'dark';
+                            } else {
+                                document.documentElement.classList.remove('dark');
+                                document.documentElement.style.colorScheme = 'light';
+                            }
+                        }
+                    });
+                }
+            });
+            
+            // Sidebar component
             Alpine.data('sidebar', () => ({
                 sidebarOpen: window.innerWidth >= 1024,
                 

@@ -49,10 +49,10 @@
                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('dashboard.quick-actions') }} transition-colors duration-200">
                     {{ __('Quick Actions') }}
                 </a>
-                <a href="{{ route('dashboard.recent-activities') }}" 
+                <!-- <a href="{{ route('dashboard.recent-activities') }}" 
                    class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('dashboard.recent-activities') }} transition-colors duration-200">
                     {{ __('Recent Activities') }}
-                </a>
+                </a> -->
             </div>
         </div>
 
@@ -394,7 +394,7 @@
         </div>
 
         <!-- Alert Settings -->
-        <div class="pt-2">
+        <!-- <div class="pt-2">
             <a href="{{ route('settings.alerts.index') }}" 
                class="group flex items-center px-3 py-2 text-sm font-medium rounded-md {{ $isActive('settings.alerts.index') }} transition-colors duration-200">
                 <svg class="mr-3 h-6 w-6 flex-shrink-0 {{ $isActive('settings.alerts.index') ? 'text-indigo-500 dark:text-indigo-400' : 'text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300' }}" 
@@ -403,7 +403,7 @@
                 </svg>
                 {{ __('Alert Settings') }}
             </a>
-        </div>
+        </div> -->
     </nav>
 
     <!-- User Profile -->

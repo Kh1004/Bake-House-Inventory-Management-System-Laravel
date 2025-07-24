@@ -20,9 +20,29 @@ Route::get('/', [\App\Http\Controllers\DashboardController::class, 'overview'])
     ->middleware(['auth', 'verified'])
     ->name('home');
 
-// Test route
-Route::get('/test-low-stock', function() {
-    return 'Test route works!';
+// Debug routes
+Route::get('/debug/alerts', function() {
+    if (!auth()->check()) {
+        return 'Not authenticated';
+    }
+    
+    $alerts = \App\Models\Alert::where('user_id', auth()->id())
+        ->orderBy('created_at', 'desc')
+        ->get();
+        
+    return response()->json([
+        'user_id' => auth()->id(),
+        'alerts' => $alerts
+    ]);
+});
+
+Route::get('/debug/low-stock-items', function() {
+    $ingredients = \App\Models\Ingredient::whereColumn('current_stock', '<', 'minimum_stock')
+        ->get(['id', 'name', 'current_stock', 'minimum_stock', 'unit']);
+        
+    return response()->json([
+        'low_stock_items' => $ingredients
+    ]);
 });
 
 // Test low-stock route (temporarily outside auth)
@@ -79,6 +99,9 @@ Route::middleware(['auth'])->group(function () {
 
 // Authenticated Routes
 Route::middleware(['auth'])->group(function () {
+    // Alerts routes
+    Route::resource('alerts', \App\Http\Controllers\AlertController::class)->only(['index', 'destroy']);
+    
     // Test authenticated route
     Route::get('/test-authenticated', function() {
         return 'Authenticated test route works!';
