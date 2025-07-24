@@ -21,12 +21,7 @@ class CheckLowStockServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Only run in web environment
-        if (app()->runningInConsole()) {
-            return;
-        }
-
-        // Run the command on every request
-        Artisan::call('inventory:check-low-stock');
+        // This provider is no longer needed as we've moved the logic to the ShareAlerts middleware
+        // to ensure the stock check runs on every request
     }
 }

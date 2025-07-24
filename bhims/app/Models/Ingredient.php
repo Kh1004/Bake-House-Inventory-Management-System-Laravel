@@ -19,6 +19,8 @@ class Ingredient extends Model
         'minimum_stock',
         'unit_price',
         'is_active',
+        'low_stock_notified',
+        'last_stock_notification_at',
     ];
 
     protected $casts = [
@@ -26,6 +28,8 @@ class Ingredient extends Model
         'minimum_stock' => 'decimal:2',
         'unit_price' => 'decimal:2',
         'is_active' => 'boolean',
+        'low_stock_notified' => 'boolean',
+        'last_stock_notification_at' => 'datetime',
     ];
 
     public function category(): BelongsTo
@@ -46,6 +50,14 @@ class Ingredient extends Model
     public function stockMovements(): HasMany
     {
         return $this->hasMany(StockMovement::class);
+    }
+
+    /**
+     * Get all alerts for this ingredient.
+     */
+    public function alerts()
+    {
+        return $this->hasMany(Alert::class, 'metadata->ingredient_id');
     }
 
     /**

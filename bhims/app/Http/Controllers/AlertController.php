@@ -49,6 +49,22 @@ class AlertController extends Controller
     }
 
     /**
+     * Get the count of unread alerts for the current user.
+     */
+    public function count()
+    {
+        if (!auth()->check()) {
+            return response()->json(['count' => 0]);
+        }
+        
+        $count = Alert::where('user_id', auth()->id())
+            ->where('is_read', false)
+            ->count();
+            
+        return response()->json(['count' => $count]);
+    }
+
+    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)

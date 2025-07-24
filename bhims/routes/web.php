@@ -102,6 +102,10 @@ Route::middleware(['auth'])->group(function () {
     // Alerts routes
     Route::resource('alerts', \App\Http\Controllers\AlertController::class)->only(['index', 'destroy']);
     
+    // AJAX route for getting unread alerts count
+    Route::get('alerts/count', [\App\Http\Controllers\AlertController::class, 'count'])
+        ->name('alerts.count');
+    
     // Test authenticated route
     Route::get('/test-authenticated', function() {
         return 'Authenticated test route works!';

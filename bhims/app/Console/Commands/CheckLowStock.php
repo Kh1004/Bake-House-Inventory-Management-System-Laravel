@@ -20,12 +20,17 @@ class CheckLowStock extends Command
     {
         Log::info('Starting low stock check');
         
-        // Get all ingredients that are below minimum stock
-        $lowStockIngredients = Ingredient::where('current_stock', '<=', DB::raw('minimum_stock'))
+        // Get all ingredients that are below minimum stock and haven't been notified in the last 24 hours
+        $lowStockIngredients = Ingredient::where('current_stock', '<=', DB::raw('minimum_stock * 1.1')) // 10% buffer
             ->where(function($query) {
                 $query->where('low_stock_notified', false)
                     ->orWhere('last_stock_notification_at', '<', now()->subHours(24));
             })
+            ->withCount(['alerts' => function($query) {
+                $query->where('created_at', '>', now()->subDay())
+                    ->where('type', 'low_stock');
+            }])
+            ->having('alerts_count', '<', 3) // Max 3 alerts per day per ingredient
             ->get();
 
         if ($lowStockIngredients->isEmpty()) {

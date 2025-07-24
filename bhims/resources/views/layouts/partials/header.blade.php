@@ -134,3 +134,53 @@
 
 <!-- Add padding to the top of main content to account for fixed header -->
 <div class="h-16"></div>
+
+@push('scripts')
+<script>
+    // Function to update the notification count
+    function updateNotificationCount() {
+        fetch('{{ route('alerts.count') }}', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.querySelector('.notification-badge');
+            const counter = document.querySelector('.notification-counter');
+            
+            if (data.count > 0) {
+                if (badge) {
+                    badge.textContent = data.count;
+                    badge.classList.remove('hidden');
+                }
+                if (counter) {
+                    counter.textContent = `(${data.count})`;
+                }
+            } else {
+                if (badge) badge.classList.add('hidden');
+                if (counter) counter.textContent = '';
+            }
+        })
+        .catch(error => console.error('Error updating notification count:', error));
+    }
+
+    // Update count every 30 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initial update
+        updateNotificationCount();
+        
+        // Set up periodic updates
+        setInterval(updateNotificationCount, 30000);
+        
+        // Also update when the page regains focus
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                updateNotificationCount();
+            }
+        });
+    });
+</script>
+@endpush
