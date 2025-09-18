@@ -19,7 +19,6 @@
                 <select id="prediction_method" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                     <option value="moving_average">7-Day Moving Average</option>
                     <option value="linear_regression">Linear Regression</option>
-                    <option value="arima_normal">ARIMA (Normal - Internal)</option>
                     <option value="arima_api">ARIMA (API - External)</option>
                 </select>
             </div>
