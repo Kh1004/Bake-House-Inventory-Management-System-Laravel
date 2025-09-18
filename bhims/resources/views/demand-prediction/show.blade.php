@@ -48,6 +48,9 @@
                     </div>
                 </div>
                 <div class="relative" style="height: 400px;">
+                    <div id="predictionError" class="hidden absolute inset-0 flex items-center justify-center bg-red-50 text-red-700 text-sm rounded">
+                        <!-- Error message will appear here -->
+                    </div>
                     <canvas id="demandChart"></canvas>
                 </div>
             </div>
@@ -149,22 +152,40 @@
         const url = new URL(`/demand-prediction/api/predict-demand/${productId}`, window.location.origin);
         url.searchParams.append('method', method);
         url.searchParams.append('days_ahead', period);
+        if (method === 'arima') {
+            url.searchParams.append('fallback', 'false');
+        }
         
         console.log('API URL:', url.toString());
         
-        // Show loading state
+        // Reset and hide previous error, show loading state
+        const errorBox = document.getElementById('predictionError');
+        if (errorBox) {
+            errorBox.classList.add('hidden');
+            errorBox.textContent = '';
+        }
         const chartCanvas = document.getElementById('demandChart');
         const ctx = chartCanvas.getContext('2d');
         ctx.textAlign = 'center';
         ctx.fillText('Loading predictions...', chartCanvas.width / 2, chartCanvas.height / 2);
         
         fetch(url)
-            .then(response => {
+            .then(async (response) => {
                 console.log('Response status:', response.status);
                 if (!response.ok) {
-                    return response.text().then(text => {
-                        throw new Error(`HTTP error! status: ${response.status}, body: ${text}`);
-                    });
+                    let message = `Request failed (status ${response.status})`;
+                    try {
+                        const text = await response.text();
+                        try {
+                            const json = JSON.parse(text);
+                            if (json && json.message) message = json.message;
+                            else if (json && json.error) message = json.error;
+                            else if (text) message = text;
+                        } catch (_) {
+                            if (text) message = text;
+                        }
+                    } catch (_) {}
+                    throw new Error(message);
                 }
                 return response.json();
             })
@@ -175,12 +196,21 @@
                     updateSummary(data.data);
                 } else {
                     console.error('API returned success:false', data);
+                    const errorBox = document.getElementById('predictionError');
+                    if (errorBox) {
+                        errorBox.textContent = data.message || 'Failed to load prediction.';
+                        errorBox.classList.remove('hidden');
+                    }
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 const errorMsg = error.message || 'Failed to load prediction. Please try again.';
-                alert(errorMsg);
+                const errorBox = document.getElementById('predictionError');
+                if (errorBox) {
+                    errorBox.textContent = errorMsg;
+                    errorBox.classList.remove('hidden');
+                }
             });
     }
 

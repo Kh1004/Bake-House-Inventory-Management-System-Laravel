@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Phpml\Regression\LeastSquares;
 use Phpml\Preprocessing\Normalizer;
+use Illuminate\Support\Facades\Http;
 
 class DemandPredictionService
 {
@@ -84,7 +85,7 @@ class DemandPredictionService
      * @param int $daysAhead Number of days to predict (default: 7)
      * @return array
      */
-    public function getDemandPrediction($productId, $daysAhead = 7, $method = 'moving_average')
+    public function getDemandPrediction($productId, $daysAhead = 7, $method = 'moving_average', bool $allowFallback = true)
     {
         // Ensure we have consistent historical data (30 days)
         $historicalDays = 30;
@@ -94,7 +95,7 @@ class DemandPredictionService
         $result = [];
         switch (strtolower($method)) {
             case 'arima':
-                $result = $this->predictWithARIMA($historicalData, $daysAhead);
+                $result = $this->predictWithExternalARIMA($historicalData, $daysAhead, [1, 1, 1], $allowFallback);
                 break;
             case 'linear_regression':
                 $result = $this->predictWithLinearRegression($historicalData, $daysAhead);
@@ -303,5 +304,56 @@ class DemandPredictionService
         
         $predictions['method'] = 'ARIMA (Smoothed)';
         return $predictions;
+    }
+
+    /**
+     * Predict using external ARIMA microservice (FastAPI)
+     */
+    protected function predictWithExternalARIMA(array $historicalData, int $daysAhead = 7, array $order = [1, 1, 1], bool $allowFallback = true): array
+    {
+        $values = array_values($historicalData);
+        $dates = array_keys($historicalData);
+
+        $serviceUrl = rtrim(config('services.forecast.url'), '/');
+        $timeout = (int) config('services.forecast.timeout', 10);
+
+        try {
+            $response = Http::timeout($timeout)
+                ->acceptJson()
+                ->post($serviceUrl . '/forecast', [
+                    'series' => array_map('intval', $values),
+                    'dates' => $dates,
+                    'steps' => $daysAhead,
+                    'order' => $order,
+                ]);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $forecast = $data['forecast'] ?? [];
+
+                $predictions = [];
+                $lastDate = Carbon::parse(end($dates));
+                for ($i = 1; $i <= $daysAhead; $i++) {
+                    $d = $lastDate->copy()->addDays($i)->format('Y-m-d');
+                    $predictions[$d] = isset($forecast[$i - 1]) ? (float) $forecast[$i - 1] : 0.0;
+                }
+
+                return [
+                    'historical' => $historicalData,
+                    'predictions' => $predictions,
+                    'method' => 'ARIMA (external)',
+                ];
+            }
+        } catch (\Throwable $e) {
+            if (!$allowFallback) {
+                throw $e;
+            }
+        }
+
+        if ($allowFallback) {
+            return $this->predictWithARIMA($historicalData, $daysAhead);
+        }
+
+        throw new \RuntimeException('ARIMA service unavailable and fallback not allowed');
     }
 }

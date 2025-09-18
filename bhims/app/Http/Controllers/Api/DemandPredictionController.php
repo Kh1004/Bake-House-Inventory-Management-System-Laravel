@@ -27,6 +27,10 @@ class DemandPredictionController extends Controller
         try {
             $daysAhead = (int)$request->input('days_ahead', 7);
             $method = $request->input('method', 'moving_average');
+            $allowFallback = filter_var(
+                $request->input('fallback', $method === 'arima' ? 'false' : 'true'),
+                FILTER_VALIDATE_BOOLEAN
+            );
             
             // Validate method
             if (!in_array($method, ['moving_average', 'linear_regression', 'arima'])) {
@@ -34,9 +38,10 @@ class DemandPredictionController extends Controller
             }
             
             $prediction = $this->predictionService->getDemandPrediction(
-                $productId, 
+                $productId,
                 $daysAhead,
-                $method
+                $method,
+                $allowFallback
             );
             
             return response()->json([
@@ -52,7 +57,7 @@ class DemandPredictionController extends Controller
                 'message' => 'Failed to generate prediction',
                 'error' => $e->getMessage(),
                 'trace' => config('app.debug') ? $e->getTraceAsString() : null
-            ], 500);
+            ], 503);
         }
     }
 }
