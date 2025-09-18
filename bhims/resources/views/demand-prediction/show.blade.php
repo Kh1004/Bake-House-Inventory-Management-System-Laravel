@@ -19,7 +19,8 @@
                 <select id="prediction_method" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                     <option value="moving_average">7-Day Moving Average</option>
                     <option value="linear_regression">Linear Regression</option>
-                    <option value="arima">ARIMA (Advanced)</option>
+                    <option value="arima_normal">ARIMA (Normal - Internal)</option>
+                    <option value="arima_api">ARIMA (API - External)</option>
                 </select>
             </div>
             <div>
@@ -37,7 +38,10 @@
         <div class="bg-white p-4 md:p-6 rounded-lg shadow">
             <div class="flex flex-col space-y-4">
                 <div class="flex justify-between items-center">
-                    <h2 id="chartTitle" class="text-lg md:text-xl font-semibold text-gray-900">Demand Prediction</h2>
+                    <div class="flex items-center space-x-3">
+                        <h2 id="chartTitle" class="text-lg md:text-xl font-semibold text-gray-900">Demand Prediction</h2>
+                        <span id="sourceBadge" class="hidden text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">Source: -</span>
+                    </div>
                     <div class="flex items-center space-x-2">
                         <span class="inline-block w-3 h-3 rounded-full bg-indigo-500"></span>
                         <span class="text-xs text-gray-600">Historical</span>
@@ -152,7 +156,7 @@
         const url = new URL(`/demand-prediction/api/predict-demand/${productId}`, window.location.origin);
         url.searchParams.append('method', method);
         url.searchParams.append('days_ahead', period);
-        if (method === 'arima') {
+        if (method === 'arima_api') {
             url.searchParams.append('fallback', 'false');
         }
         
@@ -215,7 +219,17 @@
     }
 
     function updateChart(data, method) {
-        document.getElementById('chartTitle').textContent = `Demand Prediction (${method})`;
+        const methodLabel = (data && data.method) ? data.method : method;
+        document.getElementById('chartTitle').textContent = `Demand Prediction (${methodLabel})`;
+        const sourceBadge = document.getElementById('sourceBadge');
+        if (sourceBadge) {
+            const isExternal = (methodLabel || '').toLowerCase().includes('external');
+            sourceBadge.textContent = isExternal ? 'Source: API' : 'Source: Internal';
+            sourceBadge.classList.remove('hidden');
+            sourceBadge.className = isExternal
+                ? 'text-xs px-2 py-1 rounded-full bg-emerald-50 text-emerald-700'
+                : 'text-xs px-2 py-1 rounded-full bg-blue-50 text-blue-700';
+        }
         
         // Store current prediction data for feedback
         currentPredictionData = data;
@@ -254,7 +268,7 @@
         // Prepare datasets
         const labels = [...Object.keys(data.historical), ...Object.keys(data.predictions)];
         const historicalData = Object.values(data.historical);
-        const movingAverages = Object.values(data.moving_averages);
+        const movingAverages = data.moving_averages ? Object.values(data.moving_averages) : new Array(Object.keys(data.historical).length).fill(null);
         const predictions = [...Array(Object.keys(data.historical).length).fill(null), ...Object.values(data.predictions)];
 
         if (demandChart) {

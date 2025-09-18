@@ -94,8 +94,11 @@ class DemandPredictionService
         // Get predictions based on selected method
         $result = [];
         switch (strtolower($method)) {
-            case 'arima':
+            case 'arima_api':
                 $result = $this->predictWithExternalARIMA($historicalData, $daysAhead, [1, 1, 1], $allowFallback);
+                break;
+            case 'arima_normal':
+                $result = $this->predictWithARIMA($historicalData, $daysAhead);
                 break;
             case 'linear_regression':
                 $result = $this->predictWithLinearRegression($historicalData, $daysAhead);
@@ -137,6 +140,11 @@ class DemandPredictionService
                 $formattedResult['predictions'][$formattedDate] = (float)number_format($predictionValues[$i], 2, '.', '');
                 $currentDate->addDay();
             }
+        }
+        
+        // Propagate method label if provided by the underlying predictor
+        if (isset($result['method'])) {
+            $formattedResult['method'] = $result['method'];
         }
         
         return $formattedResult;

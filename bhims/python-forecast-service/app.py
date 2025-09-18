@@ -6,7 +6,7 @@ import numpy as np
 
 
 class ForecastRequest(BaseModel):
-    series: conlist(float, min_items=1)
+    series: conlist(float, min_length=1)
     dates: Optional[List[str]] = None
     steps: int = 7
     order: Optional[List[int]] = None  # [p, d, q]

@@ -276,3 +276,48 @@ Route::get('/debug/ingredients-table', function () {
         ], 500);
     }
 });
+
+// Quick forecast service debug routes (local only)
+if (app()->environment('local')) {
+    Route::get('/debug/forecast-health', function () {
+        try {
+            $url = rtrim(config('services.forecast.url'), '/') . '/health';
+            $res = \Illuminate\Support\Facades\Http::timeout((int) config('services.forecast.timeout', 10))
+                ->acceptJson()
+                ->get($url);
+            return response()->json([
+                'service_url' => $url,
+                'status' => $res->status(),
+                'body' => $res->json(),
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'service_url' => config('services.forecast.url'),
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    });
+
+    Route::get('/debug/forecast-test', function () {
+        try {
+            $url = rtrim(config('services.forecast.url'), '/') . '/forecast';
+            $payload = [
+                'series' => [5,7,6,8,7,9,8,10,9,11,10],
+                'steps' => 7,
+            ];
+            $res = \Illuminate\Support\Facades\Http::timeout((int) config('services.forecast.timeout', 10))
+                ->acceptJson()
+                ->post($url, $payload);
+            return response()->json([
+                'service_url' => $url,
+                'status' => $res->status(),
+                'body' => $res->json(),
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'service_url' => config('services.forecast.url'),
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    });
+}

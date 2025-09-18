@@ -27,13 +27,14 @@ class DemandPredictionController extends Controller
         try {
             $daysAhead = (int)$request->input('days_ahead', 7);
             $method = $request->input('method', 'moving_average');
-            $allowFallback = filter_var(
-                $request->input('fallback', $method === 'arima' ? 'false' : 'true'),
-                FILTER_VALIDATE_BOOLEAN
-            );
+            
+            // Accept new ARIMA modes: arima_normal (internal) and arima_api (external)
+            // Ensure API data when arima_api is selected by defaulting fallback to false
+            $defaultFallback = ($method === 'arima_api') ? 'false' : 'true';
+            $allowFallback = filter_var($request->input('fallback', $defaultFallback), FILTER_VALIDATE_BOOLEAN);
             
             // Validate method
-            if (!in_array($method, ['moving_average', 'linear_regression', 'arima'])) {
+            if (!in_array($method, ['moving_average', 'linear_regression', 'arima_normal', 'arima_api'])) {
                 $method = 'moving_average';
             }
             
